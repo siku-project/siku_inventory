@@ -1,0 +1,21 @@
+.DS_Store
+Thumbs.db
+
+*.log
+*.bak
+*.tmp
+
+.idea/
+.vscode/
+!.vscode/extensions.json
+
+# Web (Vue/Vite) — node_modules & build artifacts
+node_modules/
+dist/
+.output/
+.nuxt/
+.vite/
+*.local
+.env
+.env.*
+!.env.example

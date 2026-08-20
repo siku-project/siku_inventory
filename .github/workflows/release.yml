@@ -1,0 +1,45 @@
+name: release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    name: package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Build web
+        working-directory: web
+        run: |
+          bun install
+          bun run build
+
+      - name: Assemble package
+        run: |
+          set -euo pipefail
+          mkdir -p package/siku_inventory/web
+          for entry in client server shared config translations fxmanifest.lua README.md; do
+            if [ -e "$entry" ]; then
+              cp -r "$entry" package/siku_inventory/
+            else
+              echo "::notice::$entry is not in the tree yet, skipped"
+            fi
+          done
+          cp -r web/dist package/siku_inventory/web/dist
+          cd package
+          zip -r ../siku_inventory.zip siku_inventory
+
+      - name: Attach to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$GITHUB_REF_NAME" siku_inventory.zip --clobber
