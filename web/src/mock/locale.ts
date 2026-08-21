@@ -11,6 +11,7 @@ export const FR_MESSAGES: Record<string, string> = {
   'container.emptyHint': "Glissez un objet ici pour l'y ranger.",
   'prompt.open': 'Ouvrir',
   'error.not_allowed': "Vous n'avez pas accès à ce conteneur",
+  'error.no_storage': "Ce véhicule n'a pas de rangement",
   'inventory.wardrobe': 'Garde-robe',
   'soon.wardrobe': 'La garde-robe arrive bientôt',
 
