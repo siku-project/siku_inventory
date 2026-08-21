@@ -89,8 +89,7 @@ function GiveToSession(sessionId, targetId, slot, count)
     return refuse(outcome and outcome.reason or 'refused')
   end
 
-  SaveInventory(giver)
-  SaveInventory(receiver)
+  SaveInventories(giver, receiver)
 
   local label <const> = GetItemDefinitionPayload(outcome.item).label
 

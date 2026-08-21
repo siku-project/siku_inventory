@@ -214,8 +214,7 @@ RegisterNetEvent('siku_inventory:server:move', function(payload)
   end)
 
   if moved then
-    SaveInventory(sourceInventory)
-    SaveInventory(targetInventory)
+    SaveInventories(sourceInventory, targetInventory)
     DiscardDropIfEmpty(sourceInventory)
     DiscardDropIfEmpty(targetInventory)
   else
