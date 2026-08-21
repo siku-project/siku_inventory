@@ -777,6 +777,10 @@ Weapons = {
     description = 'Un pistolet à impulsion. Deux fils, une cartouche, et la cible tombe.',
 
     category = 'pistol',
+
+    --- The one firearm here that loads nothing: it carries its own charge, so
+    --- there is no round to declare and nothing to reload.
+    ammoType = false,
   },
 
   --- Submachine guns
