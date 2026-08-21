@@ -107,6 +107,22 @@ function GetReachableGlovebox()
   return vehicle
 end
 
+--- What the server needs to find a compartment on a vehicle.
+---
+--- The class travels with the request because it cannot be read where it is
+--- needed: the game only answers it on this side. It decides nothing but how
+--- much the compartment holds, and only among the sizes the configuration
+--- already declares — everything that decides whether it may be opened at all
+--- is read from the entity by the server.
+---@param entity number The vehicle entity.
+---@return table request The vehicle network id and its class.
+local function describeVehicle(entity)
+  return {
+    vehicle = NetworkGetNetworkIdFromEntity(entity),
+    class = GetVehicleClass(entity),
+  }
+end
+
 --- Opens the compartment the character is standing at, or sitting in front of.
 ---
 --- Where they are decides what they get: a front seat opens the glovebox, and
@@ -117,13 +133,13 @@ function OpenReachableCompartment()
   local glovebox <const> = GetReachableGlovebox()
 
   if glovebox then
-    return OpenContainer('glovebox', { vehicle = NetworkGetNetworkIdFromEntity(glovebox) })
+    return OpenContainer('glovebox', describeVehicle(glovebox))
   end
 
   local trunk <const> = GetReachableTrunk()
 
   if trunk then
-    return OpenContainer('trunk', { vehicle = NetworkGetNetworkIdFromEntity(trunk) })
+    return OpenContainer('trunk', describeVehicle(trunk))
   end
 
   return false

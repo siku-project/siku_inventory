@@ -9,6 +9,12 @@ local ICONS <const> = {
 
 --- Reads the vehicle a request named, and everything about it that decides
 --- whether a compartment may be opened.
+---
+--- Everything is read from the entity, except the class: the game only answers
+--- that one where the vehicle is rendered, so it arrives with the request. It
+--- is the single thing here that is taken on the client's word, and it decides
+--- nothing but which of the declared sizes applies — a claim that names no
+--- declared class simply finds no compartment.
 ---@param request any What was asked for.
 ---@return table? vehicle The entity, its plate, its model and its class.
 local function readVehicle(request)
@@ -32,7 +38,7 @@ local function readVehicle(request)
     entity = entity,
     plate = plate,
     model = GetEntityModel(entity),
-    class = GetVehicleClass(entity),
+    class = type(request.class) == 'number' and request.class or nil,
   }
 end
 
