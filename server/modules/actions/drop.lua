@@ -29,10 +29,17 @@ function DropFromSlot(sessionId, source, slot, count, coords)
       return false
     end
 
+    --- Written before the ground is, and that order is not cosmetic: an
+    --- instance is unique in database, so it may never be recorded in two
+    --- places — not even for the moment between two transactions. Writing the
+    --- arrival first is what makes the database refuse the departure.
+    SaveInventory(inventory)
+
     local drop <const> = CreateDrop(coords, taken)
 
     if not drop then
       inventory:addItem(taken, taken.count)
+      SaveInventory(inventory)
 
       return false
     end
@@ -41,7 +48,6 @@ function DropFromSlot(sessionId, source, slot, count, coords)
   end)
 
   if dropped then
-    SaveInventory(inventory)
     NotifyDropsChanged(sessionId)
     NotifyContainerChanged(inventory.id, sessionId)
   else

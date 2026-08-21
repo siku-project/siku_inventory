@@ -78,15 +78,21 @@ local function transferAll(from, to)
 end
 
 --- Settles both sides of a confiscation once it happened.
+---
+--- The emptied side is written first, and which side that is depends on the
+--- direction — which is why it is named rather than assumed. An instance is
+--- unique in database and may never be recorded in two places, so writing
+--- where it arrived before writing where it left makes the database refuse it.
 ---@param sessionId number The player server id.
----@param inventory table The character inventory.
----@param holding table The holding container.
+---@param from table The container the instances left.
+---@param to table The container they arrived in.
 ---@return nil
-local function settle(sessionId, inventory, holding)
-  SaveInventory(inventory)
-  SaveInventory(holding)
-  NotifyInventoryChanged(inventory)
-  NotifyContainerChanged(holding.id)
+local function settle(sessionId, from, to)
+  SaveInventory(from)
+  SaveInventory(to)
+  NotifyInventoryChanged(from)
+  NotifyInventoryChanged(to)
+  NotifyContainerChanged(from:isCharacter() and to.id or from.id)
   PushInventoryState(sessionId)
 end
 
@@ -161,7 +167,7 @@ function ReturnInventory(sessionId)
     return 0, 'no_room'
   end
 
-  settle(sessionId, inventory, holding)
+  settle(sessionId, holding, inventory)
 
   --- What would not fit stayed held rather than falling on the floor, and that
   --- is only reassuring if the player is told to come back for it.
