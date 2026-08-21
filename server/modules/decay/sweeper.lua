@@ -24,20 +24,21 @@ local function sweepSpoiled()
     end
 
     if #expired > 0 then
-      touched[#touched + 1] = inventory
+      touched[#touched + 1] = { inventory = inventory, count = #expired }
     end
   end)
 
   local onGround = false
 
   for i = 1, #touched do
-    local inventory <const> = touched[i]
+    local inventory <const> = touched[i].inventory
 
     onGround = onGround or inventory:isGround()
 
     SaveInventory(inventory)
     DiscardDropIfEmpty(inventory)
     NotifyInventoryChanged(inventory)
+    NotifyInventoryOwner(inventory, 'warning', T('notify_spoiled', touched[i].count))
   end
 
   if onGround then

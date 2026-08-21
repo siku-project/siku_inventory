@@ -155,4 +155,21 @@ InventoryConfig = {
   ---
   --- Default: true
   blurWorld = true,
+
+  --- The role that receives this resource's staff permissions at startup.
+  ---
+  --- Each staff command names the permission it demands; this only says who
+  --- is given it. The grant is additive and persists in database, so a role
+  --- that already holds a permission is left alone — but one taken away by
+  --- hand comes back at the next start, because nothing here can tell a
+  --- deliberate removal from a fresh install.
+  ---
+  --- Roles inherit down the primary chain, so naming a grade gives the
+  --- permission to that grade and every one above it.
+  ---
+  --- Set it to false to be granted nothing and attach the permissions
+  --- yourself, through Siku.permissions or your own seed.
+  ---
+  --- Default: 'admin'
+  staffRole = 'admin',
 }

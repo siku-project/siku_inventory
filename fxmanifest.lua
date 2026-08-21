@@ -14,6 +14,7 @@ shared_scripts {
   'config/*.lua',
   'shared/utils/locale.lua',
   'shared/utils/callable.lua',
+  'shared/utils/class.lua',
   'shared/items.lua',
   'shared/ammo.lua',
   'shared/weapons.lua',
