@@ -21,28 +21,18 @@ if faultyStashes > 0 then
   Siku.print.warn(T('stashes_invalid_total', faultyStashes))
 end
 
-local databaseReady = false
-
---- Nothing of this resource runs in here. A callback handed to another
---- resource is invoked by it, and a migration started from inside one is
---- credited to that resource rather than to this one — which is the name its
---- schema is then recorded under, and the name anything waiting on it waits
---- for. So this only raises the flag.
-MySQL.ready(function()
-  databaseReady = true
-end)
-
 --- Everything that needs the database waits in its own thread.
 ---
---- The migration blocks until the schemas it declared a dependency on are in
---- place, and this file is the first server script the resource loads: waiting
---- here would suspend the load itself, so the modules below would not exist
---- yet and nothing above would have been announced.
+--- The migration blocks on purpose — this resource has no business serving
+--- anything before its tables exist — and this file is the first server script
+--- the resource loads: waiting here would suspend the load itself, so the
+--- modules below would not exist yet and nothing above would have been
+--- announced.
+---
+--- The connection is not waited on separately. The schema declares what it
+--- depends on, and a dependency only completes once the database answered, so
+--- waiting for it is already waiting for the database.
 CreateThread(function()
-  while not databaseReady do
-    Wait(100)
-  end
-
   if not Siku.RunMigration(MigrationConfig) then
     return
   end
