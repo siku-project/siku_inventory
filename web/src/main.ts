@@ -9,6 +9,7 @@ import 'vuetify/styles'
 
 import App from './App.vue'
 import i18n from './i18n'
+import { vDrag, vDrop } from './directives/drag'
 
 const vuetify = createVuetify({
   icons: {
@@ -46,5 +47,8 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(vuetify)
 app.use(i18n)
+
+app.directive('drag', vDrag)
+app.directive('drop', vDrop)
 
 app.mount('#app')
