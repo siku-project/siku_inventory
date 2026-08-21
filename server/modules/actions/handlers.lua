@@ -17,6 +17,8 @@ local function pushState(sessionId)
     return
   end
 
+  HolsterUnreachableWeapon(sessionId, inventory)
+
   local coords <const> = GetSessionCoords(sessionId)
   local ground <const> = coords and BuildGroundPayload(coords) or {}
   local container <const> = GetSessionContainer(sessionId)

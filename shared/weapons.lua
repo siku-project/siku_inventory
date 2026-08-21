@@ -777,7 +777,6 @@ Weapons = {
     description = 'Un pistolet à impulsion. Deux fils, une cartouche, et la cible tombe.',
 
     category = 'pistol',
-    ammoType = 'ammo-stungun',
   },
 
   --- Submachine guns

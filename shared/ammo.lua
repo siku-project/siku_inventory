@@ -354,22 +354,6 @@ Ammo = {
     description = 'Une cellule d\'énergie. Elle ne pèse presque rien et ne se recharge pas.',
   },
 
-  ['ammo-stungun'] = {
-    name = 'ammo-stungun',
-    label = 'Taser cartridge',
-    type = 'item',
-
-    weight = 40,
-    image = 'ammo-stungun.png',
-
-    stackable = true,
-    unique = false,
-    usable = true,
-    closeOnUse = false,
-
-    description = 'Une cartouche à deux fils, propulsés à l\'air comprimé. Un seul usage.',
-  },
-
   ['ammo-snowball'] = {
     name = 'ammo-snowball',
     label = 'Snowball',

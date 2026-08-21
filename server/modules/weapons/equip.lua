@@ -106,6 +106,38 @@ function ForgetDrawnWeapon(sessionId)
   drawnBySession[sessionId] = nil
 end
 
+--- Puts away a weapon that is no longer on a hotbar key.
+---
+--- What makes a weapon usable is the key it sits on, and drawing it is not a
+--- moment that settles the question once and for all — the key has to keep
+--- holding it. Taking it off the key while it is out, dropping it, handing it
+--- over: each of those ends with a weapon in hands that no longer own it.
+---
+--- Asked again on every state a session is sent, so whatever moved the
+--- instance did not have to know a weapon was concerned.
+---@param sessionId number The player server id.
+---@param inventory table The character inventory.
+---@return boolean holstered Whether a weapon was put away.
+function HolsterUnreachableWeapon(sessionId, inventory)
+  local uid <const> = drawnBySession[sessionId]
+
+  if not uid then
+    return false
+  end
+
+  local slot <const> = inventory:findByUid(uid)
+
+  if slot and IsHotbarSlot(slot) then
+    return false
+  end
+
+  drawnBySession[sessionId] = nil
+
+  TriggerClientEvent('siku_inventory:client:setDrawnWeapon', sessionId, false)
+
+  return true
+end
+
 --- Answers a request to draw or put away the weapon sitting on a hotbar key.
 ---
 --- The same key does both: what the client asks for is a key, and what it gets
