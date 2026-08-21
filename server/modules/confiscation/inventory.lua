@@ -88,8 +88,7 @@ end
 ---@param to table The container they arrived in.
 ---@return nil
 local function settle(sessionId, from, to)
-  SaveInventory(from)
-  SaveInventory(to)
+  SaveInventories(from, to)
   NotifyInventoryChanged(from)
   NotifyInventoryChanged(to)
   NotifyContainerChanged(from:isCharacter() and to.id or from.id)

@@ -202,32 +202,27 @@ function CreateLooseInventory(coords, expiresAt)
   return row and remember(hydrate(row)) or nil
 end
 
---- Writes an inventory back, replacing its stacks in one transaction so a
---- half-written inventory is never observable. The dirty flag is cleared
---- before the transaction is awaited: a change landing during the write
---- raises it again and is caught by the next save, whereas a second save
---- entering meanwhile finds nothing to do and cannot commit a staler
---- snapshot over a fresher one.
----@param inventory table The inventory to persist.
+--- Empties an inventory and restates how big it is.
+---@param inventory table The inventory being written.
+---@param queries table The list to append to.
 ---@return nil
-function SaveInventory(inventory)
-  if not inventory or not inventory.dirty then
-    return
-  end
-
-  inventory.dirty = false
-
-  local queries <const> = {
-    {
-      query = 'UPDATE inventories SET slots = ?, max_weight = ? WHERE id = ?',
-      values = { inventory.slots, inventory.maxWeight, inventory.id },
-    },
-    {
-      query = 'DELETE FROM inventory_items WHERE inventory_id = ?',
-      values = { inventory.id },
-    },
+local function appendClear(inventory, queries)
+  queries[#queries + 1] = {
+    query = 'UPDATE inventories SET slots = ?, max_weight = ? WHERE id = ?',
+    values = { inventory.slots, inventory.maxWeight, inventory.id },
   }
 
+  queries[#queries + 1] = {
+    query = 'DELETE FROM inventory_items WHERE inventory_id = ?',
+    values = { inventory.id },
+  }
+end
+
+--- Writes back everything an inventory holds.
+---@param inventory table The inventory being written.
+---@param queries table The list to append to.
+---@return nil
+local function appendStacks(inventory, queries)
   for slot, stack in pairs(inventory.stacks) do
     queries[#queries + 1] = {
       query = 'INSERT INTO inventory_items (inventory_id, slot, item, count, metadata, uid, expires_at, uses) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
@@ -243,14 +238,70 @@ function SaveInventory(inventory)
       },
     }
   end
+end
+
+--- Writes several inventories back in one transaction.
+---
+--- One transaction and not one each, because an instance is unique across the
+--- whole table rather than within a container. Two containers that traded
+--- something each hold, for a moment, what the other has not let go of yet —
+--- and an exchange has no safe order at all, since each side is at once the
+--- one giving and the one receiving. Written together, that moment never
+--- exists.
+---
+--- The dirty flag is cleared before the transaction is awaited: a change
+--- landing during the write raises it again and is caught by the next save,
+--- whereas a second save entering meanwhile finds nothing to do and cannot
+--- commit a staler snapshot over a fresher one.
+---@param ... table The inventories to persist.
+---@return nil
+function SaveInventories(...)
+  local given <const> = { ... }
+  local writing <const> = {}
+  local queries <const> = {}
+
+  for i = 1, #given do
+    local inventory <const> = given[i]
+
+    if inventory and inventory.dirty and not writing[inventory.id] then
+      inventory.dirty = false
+      writing[inventory.id] = inventory
+
+      appendClear(inventory, queries)
+    end
+  end
+
+  if #queries == 0 then
+    return
+  end
+
+  --- Every inventory is emptied before any of them is filled. A unique index
+  --- is checked statement by statement and never deferred to the commit, so
+  --- one transaction alone would not help: filling the first while the second
+  --- still holds what it traded away is refused just as surely inside a
+  --- transaction as outside one.
+  for _, inventory in pairs(writing) do
+    appendStacks(inventory, queries)
+  end
 
   local ok <const> = MySQL.transaction.await(queries)
 
-  if not ok then
+  if ok then
+    return
+  end
+
+  for id, inventory in pairs(writing) do
     inventory.dirty = true
 
-    Siku.print.error(T('inventory_save_failed', inventory.id))
+    Siku.print.error(T('inventory_save_failed', id))
   end
+end
+
+--- Writes one inventory back, replacing its stacks.
+---@param inventory table The inventory to persist.
+---@return nil
+function SaveInventory(inventory)
+  SaveInventories(inventory)
 end
 
 --- Removes an inventory and everything it held.
