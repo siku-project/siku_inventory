@@ -50,7 +50,7 @@ local function transferAll(from, to)
     slots[#slots + 1] = slot
   end
 
-  table.sort(slots)
+  SortSlots(slots)
 
   local moved = 0
 

@@ -100,10 +100,12 @@ export const useItemActions = () => {
   }
 
   const run = async (action: ItemAction, candidate: ActionTarget): Promise<void> => {
-    const slot = candidate.ref.slot ?? 0
+    const slot = candidate.ref.slot
 
     if (action === 'use') {
-      await store.use(slot)
+      if (slot !== undefined) {
+        await store.use(slot)
+      }
 
       return
     }

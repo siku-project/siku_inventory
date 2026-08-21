@@ -233,7 +233,7 @@ function SaveInventory(inventory)
       query = 'INSERT INTO inventory_items (inventory_id, slot, item, count, metadata, uid, expires_at, uses) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
       values = {
         inventory.id,
-        slot,
+        tostring(slot),
         stack.item,
         stack.count,
         stack.metadata and json.encode(stack.metadata) or nil,

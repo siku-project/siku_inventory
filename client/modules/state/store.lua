@@ -98,7 +98,7 @@ function GetHotbarSlot(index)
 
   local stack <const> = inventory.hotbar[tostring(index)]
 
-  return stack and GetHotbarSlotNumber(index) or nil
+  return stack and GetHotbarSlotId(index) or nil
 end
 
 exports('GetHotbarSlot', GetHotbarSlot)

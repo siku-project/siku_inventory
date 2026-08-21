@@ -10,13 +10,14 @@ import type {
   MoveRequest,
   NearbyPlayer,
   PlayerInventory,
+  SlotId,
   SplitRequest,
 } from '@/types/inventory'
 
 const SLOTS = 40
 const MAX_WEIGHT = 35000
 const HOTBAR_SLOTS = 5
-const HOTBAR_OFFSET = 1000
+const HOTBAR_PREFIX = 'H'
 
 export interface MockOutcome {
   state: InventoryState
@@ -87,7 +88,38 @@ const mergedFreshness = (a?: number, b?: number): number | undefined => {
   return Math.min(a, b)
 }
 
-const isHotbarSlot = (slot: number): boolean => slot > HOTBAR_OFFSET
+const hotbarSlotId = (index: number): SlotId => `${HOTBAR_PREFIX}${index}`
+
+const isHotbarSlot = (slot: SlotId): boolean =>
+  typeof slot === 'string' && new RegExp(`^${HOTBAR_PREFIX}\\d+$`).test(slot)
+
+const hotbarIndexOf = (slot: SlotId): number | null => {
+  if (!isHotbarSlot(slot)) {
+    return null
+  }
+
+  const index = Number(String(slot).slice(HOTBAR_PREFIX.length))
+
+  return index >= 1 && index <= HOTBAR_SLOTS ? index : null
+}
+
+/** Reads a key back as the identifier it stands for, in either shape. */
+const slotOf = (key: string): SlotId => (isHotbarSlot(key) ? key : Number(key))
+
+/**
+ * The grid slot an identifier stands for, or nothing when it names a key.
+ * A panel beside the bag has a grid and no hotbar, so a key pointed at one is
+ * not a slot it could ever fill.
+ */
+const gridSlotOf = (slot: SlotId | undefined): number | null => {
+  if (slot === undefined || isHotbarSlot(slot)) {
+    return null
+  }
+
+  const number = Number(slot)
+
+  return Number.isInteger(number) && number >= 1 ? number : null
+}
 
 let uidCounter = 1000
 
@@ -135,7 +167,7 @@ export class MockServer {
     }
 
     for (const [index, stack] of Object.entries(inventory.hotbar)) {
-      const slot = HOTBAR_OFFSET + Number(index)
+      const slot = hotbarSlotId(Number(index))
 
       this.stacks[String(slot)] = { ...stack, slot }
     }
@@ -146,11 +178,12 @@ export class MockServer {
     const hotbar: Record<string, ItemStack> = {}
 
     for (const [key, stack] of Object.entries(this.stacks)) {
-      const slot = Number(key)
+      const slot = slotOf(key)
       const exposed = { ...stack, slot, weight: unitWeight(stack.item) * stack.count }
+      const index = hotbarIndexOf(slot)
 
-      if (isHotbarSlot(slot)) {
-        hotbar[String(slot - HOTBAR_OFFSET)] = exposed
+      if (index !== null) {
+        hotbar[String(index)] = exposed
       } else {
         stacks[key] = exposed
       }
@@ -213,10 +246,8 @@ export class MockServer {
     const found: number[] = []
 
     for (const [key, stack] of Object.entries(this.stacks)) {
-      const slot = Number(key)
-
-      if (!isHotbarSlot(slot) && canStack(stack, { item, metadata })) {
-        found.push(slot)
+      if (!isHotbarSlot(key) && canStack(stack, { item, metadata })) {
+        found.push(Number(key))
       }
     }
 
@@ -312,7 +343,7 @@ export class MockServer {
     return accepted - remaining
   }
 
-  private takeFromSlot(slot: number, count: number): ItemStack | null {
+  private takeFromSlot(slot: SlotId, count: number): ItemStack | null {
     const key = String(slot)
     const stack = this.stacks[key]
 
@@ -339,7 +370,7 @@ export class MockServer {
     return taken
   }
 
-  private takeFromGround(dropId: number, slot: number, count: number): ItemStack | null {
+  private takeFromGround(dropId: number, slot: SlotId, count: number): ItemStack | null {
     const index = this.ground.findIndex((entry) => entry.dropId === dropId && entry.slot === slot)
 
     if (index < 0 || count <= 0) {
@@ -425,22 +456,22 @@ export class MockServer {
   }
 
   /** Turns a reference the interface sent into the slot it stands for. */
-  private resolve(reference: ContainerRef): number | null {
+  private resolve(reference: ContainerRef): SlotId | null {
     if (reference.container === 'hotbar') {
-      const index = reference.slot ?? 0
+      const index = Number(reference.slot ?? 0)
 
-      if (index < 1 || index > HOTBAR_SLOTS) {
+      if (!Number.isInteger(index) || index < 1 || index > HOTBAR_SLOTS) {
         return null
       }
 
-      return HOTBAR_OFFSET + index
+      return hotbarSlotId(index)
     }
 
     if (reference.container !== 'player' || reference.slot === undefined) {
       return null
     }
 
-    return isHotbarSlot(reference.slot) ? null : reference.slot
+    return isHotbarSlot(reference.slot) ? null : Number(reference.slot)
   }
 
   move(request: MoveRequest): MockOutcome {
@@ -525,12 +556,23 @@ export class MockServer {
       return { state: this.snapshot(), refusal: 'unreachable' }
     }
 
+    const inside = gridSlotOf(from.slot)
+    const onto = gridSlotOf(to.slot)
+
     if (from.container === 'secondary' && to.container === 'secondary') {
-      return this.moveInsideContainer(container, from.slot ?? 0, to.slot, count)
+      if (inside === null) {
+        return { state: this.snapshot(), refusal: 'invalid_request' }
+      }
+
+      return this.moveInsideContainer(container, inside, onto ?? undefined, count)
     }
 
     if (from.container === 'secondary') {
-      const taken = container.take(from.slot ?? 0, count)
+      if (inside === null) {
+        return { state: this.snapshot(), refusal: 'invalid_request' }
+      }
+
+      const taken = container.take(inside, count)
 
       if (!taken) {
         return { state: this.snapshot(), refusal: 'empty_slot' }
@@ -541,7 +583,7 @@ export class MockServer {
         target !== null ? this.placeInSlot(target, taken) : this.addToInventory(taken, taken.count)
 
       if (placed < taken.count) {
-        container.place(from.slot ?? 0, { ...taken, count: taken.count - placed })
+        container.place(inside, { ...taken, count: taken.count - placed })
       }
 
       return { state: this.snapshot(), refusal: placed > 0 ? undefined : 'no_room' }
@@ -549,7 +591,7 @@ export class MockServer {
 
     const fromSlot = this.resolve(from)
 
-    if (fromSlot === null) {
+    if (fromSlot === null || (to.slot !== undefined && onto === null)) {
       return { state: this.snapshot(), refusal: 'invalid_request' }
     }
 
@@ -559,8 +601,7 @@ export class MockServer {
       return { state: this.snapshot(), refusal: 'empty_slot' }
     }
 
-    const placed =
-      to.slot !== undefined ? container.place(to.slot, taken) : container.add(taken, taken.count)
+    const placed = onto !== null ? container.place(onto, taken) : container.add(taken, taken.count)
 
     if (placed < taken.count) {
       this.placeInSlot(fromSlot, { ...taken, count: taken.count - placed })
@@ -615,7 +656,7 @@ export class MockServer {
     return { state: this.snapshot(), refusal: placed > 0 ? undefined : 'no_room' }
   }
 
-  private placeInSlot(slot: number, instance: ItemStack): number {
+  private placeInSlot(slot: SlotId, instance: ItemStack): number {
     const key = String(slot)
     const existing = this.stacks[key]
     const unit = unitWeight(instance.item)
@@ -670,7 +711,7 @@ export class MockServer {
    * The eviction is checked before anything is committed, so a full grid
    * refuses the exchange instead of losing the evicted stack.
    */
-  private placeIntoHotbar(fromSlot: number, hotbarSlot: number, count: number): MockOutcome {
+  private placeIntoHotbar(fromSlot: SlotId, hotbarSlot: SlotId, count: number): MockOutcome {
     if (fromSlot === hotbarSlot) {
       return { state: this.snapshot(), refusal: 'same_slot' }
     }
@@ -711,7 +752,7 @@ export class MockServer {
     return { state: this.snapshot() }
   }
 
-  private moveInside(fromSlot: number, toSlot: number | null, count: number): MockOutcome {
+  private moveInside(fromSlot: SlotId, toSlot: SlotId | null, count: number): MockOutcome {
     if (fromSlot === toSlot) {
       return { state: this.snapshot(), refusal: 'same_slot' }
     }
@@ -753,7 +794,7 @@ export class MockServer {
   }
 
   /** Reached through move(); the ground is named as a container, never a slot. */
-  private drop(slot: number, count: number): MockOutcome {
+  private drop(slot: SlotId, count: number): MockOutcome {
     const taken = this.takeFromSlot(slot, count)
 
     if (!taken) {
@@ -816,7 +857,7 @@ export class MockServer {
     return { state: this.snapshot() }
   }
 
-  use(slot: number): MockOutcome {
+  use(slot: SlotId): MockOutcome {
     const stack = this.stacks[String(slot)]
 
     if (!stack) {
@@ -943,4 +984,4 @@ export class MockServer {
   }
 }
 
-export const MOCK_LIMITS = { SLOTS, MAX_WEIGHT, HOTBAR_SLOTS, HOTBAR_OFFSET }
+export const MOCK_LIMITS = { SLOTS, MAX_WEIGHT, HOTBAR_SLOTS }

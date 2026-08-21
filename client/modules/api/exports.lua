@@ -4,14 +4,16 @@
 --- slot, asks the item whether the use makes sense, occupies the character for
 --- as long as the item says, and hands over to whoever owns the behaviour. A
 --- refusal comes back as a notification like any other.
----@param slot number The slot to use, hotbar slots included.
+---@param slot number|string The slot to use, hotbar keys included.
 ---@return boolean asked Whether the request was sent.
 function UseSlot(slot)
-  if type(slot) ~= 'number' or slot % 1 ~= 0 or slot < 1 then
+  local wanted <const> = ReadSlotId(slot)
+
+  if not wanted then
     return false
   end
 
-  TriggerServerEvent('siku_inventory:server:use', { slot = slot })
+  TriggerServerEvent('siku_inventory:server:use', { slot = wanted })
 
   return true
 end
@@ -25,7 +27,7 @@ exports('UseSlot', UseSlot)
 --- refusal. Anything else is taken from the lowest carried slot, then from the
 --- hotbar.
 ---@param item string The item identifier.
----@return number? slot The slot holding it, nil when the character has none.
+---@return (number|string)? slot The slot holding it, nil when the character has none.
 local function findSlotHolding(item)
   local inventory <const> = GetInventoryState().inventory
 
@@ -59,7 +61,7 @@ local function findSlotHolding(item)
     end
   end
 
-  return rank and GetHotbarSlotNumber(rank) or nil
+  return rank and GetHotbarSlotId(rank) or nil
 end
 
 --- Uses an item by name, wherever the character is carrying it.
@@ -123,7 +125,7 @@ exports('OpenContainer', OpenContainer)
 --- that: a quantity that came out of a calculation and landed on zero is a
 --- mistake, and giving everything away is too final to be what a mistake does.
 ---@param serverId number The receiving player server id.
----@param slot number The slot to draw from.
+---@param slot number|string The slot to draw from.
 ---@param count? number The quantity, nil for the whole stack.
 ---@return boolean asked Whether the request was sent.
 function GiveItemToTarget(serverId, slot, count)
@@ -131,7 +133,9 @@ function GiveItemToTarget(serverId, slot, count)
     return false
   end
 
-  if type(slot) ~= 'number' or slot % 1 ~= 0 or slot < 1 then
+  local source <const> = ReadSlotId(slot)
+
+  if not source then
     return false
   end
 
@@ -145,7 +149,7 @@ function GiveItemToTarget(serverId, slot, count)
 
   TriggerServerEvent('siku_inventory:server:give', {
     target = serverId,
-    slot = slot,
+    slot = source,
     count = count,
   })
 

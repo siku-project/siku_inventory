@@ -59,10 +59,19 @@ function ReadCount(value)
   return value
 end
 
---- Reads a slot number a client sent.
+--- Reads a slot identifier a client sent, in either of the shapes a slot is
+--- written in.
 ---@param value any The value received.
----@return number? slot The accepted slot.
+---@return (number|string)? slot The accepted slot.
 function ReadSlot(value)
+  return ReadSlotId(value)
+end
+
+--- Reads a row identifier a client sent: a drop, a player, anything found by
+--- number. Kept apart from a slot, which a slot is no longer only.
+---@param value any The value received.
+---@return number? id The accepted identifier.
+function ReadIdentifier(value)
   if type(value) ~= 'number' or value % 1 ~= 0 or value < 1 then
     return nil
   end

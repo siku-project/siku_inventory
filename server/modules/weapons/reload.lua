@@ -106,7 +106,7 @@ function BuildReloadTargets(sessionId, ammoItem)
     end
   end
 
-  table.sort(slots)
+  SortSlots(slots)
 
   local weapons <const> = {}
 

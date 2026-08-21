@@ -283,15 +283,17 @@ const confirmQuantity = async (count: number): Promise<void> => {
     return
   }
 
-  const slot = intent.target.ref.slot ?? 0
-
   if (intent.purpose === 'drop') {
     await store.move(intent.target.ref, { container: 'ground' }, count)
 
     return
   }
 
-  await store.split(slot, count)
+  const slot = intent.target.ref.slot
+
+  if (slot !== undefined) {
+    await store.split(slot, count)
+  }
 }
 
 const confirmGive = async (payload: { count: number; target: number }): Promise<void> => {
@@ -299,8 +301,8 @@ const confirmGive = async (payload: { count: number; target: number }): Promise<
 
   actions.closeDialog()
 
-  if (candidate) {
-    await store.give(candidate.ref.slot ?? 0, payload.count, payload.target)
+  if (candidate && candidate.ref.slot !== undefined) {
+    await store.give(candidate.ref.slot, payload.count, payload.target)
   }
 }
 

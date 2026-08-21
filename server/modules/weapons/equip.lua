@@ -16,7 +16,7 @@ end
 ---@param slot number The slot the client named.
 ---@return table? stack, string? reason The weapon stack, and why it cannot be drawn otherwise.
 local function readHotbarWeapon(inventory, slot)
-  if not IsHotbarSlotNumber(slot) then
+  if not IsHotbarSlot(slot) then
     return nil, 'not_on_hotbar'
   end
 
