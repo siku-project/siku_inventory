@@ -50,30 +50,18 @@ const footNote = computed(() => {
 const isSource = computed(() => drag.isSource(props.reference))
 const isTargeted = computed(() => drag.isDragging.value && drag.isHovered(props.reference))
 
-const onDragStart = (event: DragEvent): void => {
-  if (!props.stack || !props.definition || props.readonly) {
-    event.preventDefault()
+/** A read-only slot shows what is there and refuses to give it up. */
+const source = computed(() =>
+  props.readonly
+    ? null
+    : { reference: props.reference, stack: props.stack, definition: props.definition },
+)
 
-    return
-  }
-
-  event.dataTransfer?.setData('text/plain', String(props.stack.slot))
-
-  if (event.dataTransfer) {
-    event.dataTransfer.effectAllowed = 'move'
-  }
-
-  drag.begin(props.reference, props.stack, props.definition)
-}
-
-const onDragOver = (event: DragEvent): void => {
-  if (!drag.isDragging.value || props.readonly) {
-    return
-  }
-
-  event.preventDefault()
-  drag.enter(props.reference)
-}
+const target = computed(() => ({
+  reference: props.reference,
+  onDrop: () => emit('drop'),
+  disabled: props.readonly,
+}))
 </script>
 
 <template>
@@ -84,15 +72,11 @@ const onDragOver = (event: DragEvent): void => {
       'slot--source': isSource,
       'slot--target': isTargeted,
     }"
-    :draggable="filled && !readonly"
+    v-drag="source"
+    v-drop="target"
     :title="filled ? label : undefined"
     role="button"
     tabindex="0"
-    @dragstart="onDragStart"
-    @dragend="drag.end()"
-    @dragover="onDragOver"
-    @dragleave="drag.leave(reference)"
-    @drop.prevent="!readonly && emit('drop')"
     @dblclick="!readonly && emit('activate')"
     @contextmenu.prevent="emit('context', $event)"
     @mouseenter="emit('hover', $event)"

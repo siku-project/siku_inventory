@@ -43,6 +43,17 @@ body {
   overflow: hidden;
 }
 
+/**
+ * Set while something is being carried between two slots. The cursor is the
+ * only thing said globally: a slot has to stay reachable by the pointer, since
+ * the pointer is what decides where the drag lands.
+ */
+body.is-dragging,
+body.is-dragging * {
+  cursor: grabbing;
+  user-select: none;
+}
+
 #app {
   margin: 0 auto;
   padding: 0;

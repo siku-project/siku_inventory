@@ -36,8 +36,7 @@ const referenceOf = (slot: number): ContainerRef => ({ container: 'secondary', s
   <section
     class="box sk-panel"
     :class="{ 'box--target': drag.isDragging.value && !container.readOnly }"
-    @dragover.prevent
-    @drop.prevent="!container.readOnly && emit('dropLoose')"
+    v-drop="{ onDrop: () => emit('dropLoose'), disabled: container.readOnly }"
   >
     <header class="box__head">
       <div class="box__identity">

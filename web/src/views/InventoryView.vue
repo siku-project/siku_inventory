@@ -12,6 +12,7 @@ import GiveDialog from '@/components/inventory/GiveDialog.vue'
 import InspectDialog from '@/components/inventory/InspectDialog.vue'
 import WeaponDialog from '@/components/weapon/WeaponDialog.vue'
 import ReloadDialog from '@/components/weapon/ReloadDialog.vue'
+import DragGhost from '@/components/inventory/DragGhost.vue'
 import { useInventoryStore } from '@/stores/inventory'
 import { useDragAndDrop } from '@/composables/useDragAndDrop'
 import { useFloating } from '@/composables/useFloating'
@@ -388,7 +389,7 @@ onBeforeUnmount(() => {
           @hotbar-drop="dropOnHotbar"
         />
 
-        <div class="screen__gap" @dragover.prevent @drop.prevent="dropOnGround"></div>
+        <div class="screen__gap" v-drop="{ onDrop: dropOnGround }"></div>
 
         <div class="screen__side">
           <ContainerPanel
@@ -413,6 +414,8 @@ onBeforeUnmount(() => {
           </template>
         </div>
       </div>
+
+      <DragGhost />
 
       <Transition name="fade">
         <ItemTooltip

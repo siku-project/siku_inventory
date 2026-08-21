@@ -27,8 +27,7 @@ const referenceOf = (entry: GroundEntry): ContainerRef => ({
   <section
     class="ground sk-panel"
     :class="{ 'ground--target': drag.isDragging.value }"
-    @dragover.prevent
-    @drop.prevent="emit('dropLoose')"
+    v-drop="{ onDrop: () => emit('dropLoose') }"
   >
     <header class="ground__head">
       <div class="ground__identity">
