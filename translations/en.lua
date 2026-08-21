@@ -26,8 +26,6 @@ return {
   keybind_stash = 'Open the stash',
   inspect_unknown = 'Unknown',
   confiscated_label = 'Confiscated items',
-  trunk_label = 'Boot %s',
-  glovebox_label = 'Glovebox %s',
 
   web = {
     ['inventory.title'] = 'Inventory',
@@ -163,6 +161,5 @@ return {
     ['error.missing_component'] = 'You no longer carry that component',
     ['error.target_unavailable'] = 'That player is unavailable',
     ['error.not_allowed'] = 'You are not allowed in that container',
-    ['error.no_storage'] = 'This vehicle has no storage',
   },
 }

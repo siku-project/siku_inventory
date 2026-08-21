@@ -18,7 +18,6 @@ shared_scripts {
   'shared/weapons.lua',
   'shared/components.lua',
   'shared/stashes.lua',
-  'shared/vehicles.lua',
   'shared/modules/**/*.lua',
 }
 
