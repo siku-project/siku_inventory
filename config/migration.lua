@@ -14,14 +14,14 @@ MigrationConfig = {
 
   schema = {
     --- Bump this whenever the tables below change.
-    version = '1.3.0',
+    version = '1.4.0',
 
     tables = {
       --- One row per container. A character inventory, a stack dropped on
       --- the ground, a stash and, later, a trunk all live here: only
       --- owner_type changes. The hotbar is not a column: what a player put
-      --- on a key is a stack like any other, stored in inventory_items above
-      --- the hotbar slot offset.
+      --- on a key is a stack like any other, stored in inventory_items under
+      --- the identifier that names the key.
       {
         name = 'inventories',
         columns = {
@@ -63,7 +63,10 @@ MigrationConfig = {
         columns = {
           { name = 'id', type = 'INT', unsigned = true, autoIncrement = true, primaryKey = true },
           { name = 'inventory_id', type = 'INT', unsigned = true, notNull = true },
-          { name = 'slot', type = 'SMALLINT', unsigned = true, notNull = true },
+          --- A slot is named, not counted: the grid uses numbers and the
+          --- hotbar uses `H1` to `H5`, so a key can never collide with a grid
+          --- slot however many of those an inventory is given.
+          { name = 'slot', type = 'VARCHAR(8)', notNull = true },
           { name = 'item', type = 'VARCHAR(64)', notNull = true },
           { name = 'count', type = 'INT', unsigned = true, notNull = true, default = 1 },
           { name = 'metadata', type = 'TEXT', default = 'NULL' },

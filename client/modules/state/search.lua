@@ -1,9 +1,9 @@
 --- Walks everything the character is carrying, in slot order.
 ---
 --- The hotbar is walked with the rest: a key holds a stack like any other, and
---- what comes back is the real slot number rather than the rank, so a slot
---- this hands over can be given, used or moved without translating anything.
----@param visit function Called with each slot number and the stack sitting in it.
+--- what comes back is the identifier it sits under rather than the rank, so a
+--- slot this hands over can be given, used or moved without translating it.
+---@param visit function Called with each slot identifier and the stack sitting in it.
 ---@return boolean read Whether there was an inventory to walk at all.
 local function eachCarriedStack(visit)
   local inventory <const> = GetInventoryState().inventory
@@ -26,12 +26,12 @@ local function eachCarriedStack(visit)
     local rank <const> = tonumber(index)
 
     if rank and type(stack) == 'table' then
-      found[#found + 1] = { slot = GetHotbarSlotNumber(rank), stack = stack }
+      found[#found + 1] = { slot = GetHotbarSlotId(rank), stack = stack }
     end
   end
 
   table.sort(found, function(a, b)
-    return a.slot < b.slot
+    return CompareSlots(a.slot, b.slot)
   end)
 
   for i = 1, #found do

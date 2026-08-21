@@ -46,8 +46,15 @@ export type ItemCatalogue = Record<string, ItemDefinition>
 
 export type ItemMetadata = Record<string, string | number | boolean>
 
+/**
+ * What names a slot. The grid counts its slots and the hotbar names its keys
+ * `H1` to `H5`, so the two can never be mistaken for one another however many
+ * slots an inventory is given.
+ */
+export type SlotId = number | string
+
 export interface ItemStack {
-  slot: number
+  slot: SlotId
   /** The item identifier, matching a catalogue key. */
   item: string
   count: number
@@ -63,7 +70,7 @@ export interface ItemStack {
 
 export interface GroundEntry extends Omit<ItemStack, 'slot'> {
   dropId: number
-  slot: number
+  slot: SlotId
 }
 
 /** Any container shown beside the bag: a stash today, a trunk tomorrow. */
@@ -116,7 +123,7 @@ export interface CharacterIdentity {
 
 export interface ContainerRef {
   container: ContainerKind
-  slot?: number
+  slot?: SlotId
   dropId?: number
 }
 
@@ -127,17 +134,17 @@ export interface MoveRequest {
 }
 
 export interface GiveRequest {
-  slot: number
+  slot: SlotId
   count: number
   target: number
 }
 
 export interface UseRequest {
-  slot: number
+  slot: SlotId
 }
 
 export interface SplitRequest {
-  slot: number
+  slot: SlotId
   count: number
 }
 

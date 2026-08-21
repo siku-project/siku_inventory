@@ -109,7 +109,7 @@ function GetInventory(target)
     ordered[#ordered + 1] = slot
   end
 
-  table.sort(ordered)
+  SortSlots(ordered)
 
   local items <const> = {}
 
@@ -201,11 +201,11 @@ end
 
 --- Reads whatever sits in a slot.
 ---
---- Nil when the slot holds nothing, and nil just the same when the number is
---- not a slot this container has: a caller asking about it is asking about
+--- Nil when the slot holds nothing, and nil just the same when what was named
+--- is not a slot this container has: a caller asking about it is asking about
 --- somewhere nothing can be, and both answers are the same answer.
 ---@param target number|table The character id, or `{ stash = name, owner = ? }`.
----@param slot number The slot to read.
+---@param slot number|string The slot to read, a hotbar key included.
 ---@return table? instance The instance, or nil when the slot is empty.
 function GetSlot(target, slot)
   return describeSlot(resolveTarget(target), slot)
@@ -499,7 +499,7 @@ function ClearInventory(target, keep)
       end
     end
 
-    table.sort(doomed)
+    SortSlots(doomed)
 
     local count = 0
 
@@ -574,7 +574,7 @@ function GetCurrentWeapon(sessionId)
   instance.ammo = takesAmmo and GetLoadedAmmo(stack) or nil
   instance.components = GetFittedComponents(stack)
   instance.serial = instance.metadata and instance.metadata.serial or nil
-  instance.hotbar = IsHotbarSlotNumber(slot) and GetHotbarIndexOf(slot) or nil
+  instance.hotbar = IsHotbarSlot(slot) and GetHotbarIndexOf(slot) or nil
 
   return instance
 end

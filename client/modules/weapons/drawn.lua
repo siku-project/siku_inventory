@@ -116,7 +116,7 @@ function GetCurrentWeapon()
     label = definition and definition.label or drawn.item,
     hash = drawn.hash,
     slot = drawn.slot,
-    hotbar = drawn.slot and IsHotbarSlotNumber(drawn.slot) and GetHotbarIndexOf(drawn.slot) or nil,
+    hotbar = drawn.slot and IsHotbarSlot(drawn.slot) and GetHotbarIndexOf(drawn.slot) or nil,
     weight = weightOf(drawn),
     melee = definition ~= nil and definition.category == 'melee',
     ammoItem = drawn.takesAmmo and definition and definition.ammoType or nil,

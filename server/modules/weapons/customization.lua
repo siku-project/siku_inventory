@@ -79,13 +79,13 @@ local function listAvailable(inventory)
   local carried <const> = {}
 
   for slot, stack in pairs(inventory.stacks) do
-    if not IsHotbarSlotNumber(slot) and IsComponentItem(stack.item) then
+    if not IsHotbarSlot(slot) and IsComponentItem(stack.item) then
       carried[#carried + 1] = { slot = slot, item = stack.item }
     end
   end
 
   table.sort(carried, function(a, b)
-    return a.slot < b.slot
+    return CompareSlots(a.slot, b.slot)
   end)
 
   local available <const> = {}
@@ -189,7 +189,7 @@ function CommitCustomization(sessionId, uid, wantedPayload)
       local found = nil
 
       for carriedSlot, carried in pairs(inventory.stacks) do
-        local usable <const> = not IsHotbarSlotNumber(carriedSlot) and not claimed[carriedSlot]
+        local usable <const> = not IsHotbarSlot(carriedSlot) and not claimed[carriedSlot]
 
         if usable and carried.item == item then
           found = carriedSlot

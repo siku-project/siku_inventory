@@ -56,7 +56,9 @@ function Inventory:constructor(row, items)
   for i = 1, #items do
     local stored <const> = items[i]
 
-    self.stacks[stored.slot] = {
+    local slot <const> = tonumber(stored.slot) or stored.slot
+
+    self.stacks[slot] = {
       item = stored.item,
       count = stored.count,
       metadata = stored.metadata and json.decode(stored.metadata) or nil,
@@ -102,18 +104,18 @@ function Inventory:getStack(slot)
   return self.stacks[slot]
 end
 
---- Whether a slot number belongs to this inventory. Hotbar slots count as
+--- Whether a slot identifier belongs to this inventory. Hotbar keys count as
 --- part of it, but only for an inventory a character actually carries: a
 --- stack lying on the ground has no hotbar to sit in.
----@param slot number The slot number.
+---@param slot any The slot identifier.
 ---@return boolean valid Whether the slot exists.
 function Inventory:isValidSlot(slot)
-  if type(slot) ~= 'number' or slot % 1 ~= 0 then
-    return false
+  if IsHotbarSlot(slot) then
+    return self:isCharacter() and GetHotbarIndexOf(slot) ~= nil
   end
 
-  if IsHotbarSlotNumber(slot) then
-    return self:isCharacter() and IsValidHotbarIndex(GetHotbarIndexOf(slot))
+  if type(slot) ~= 'number' or slot % 1 ~= 0 then
+    return false
   end
 
   if self.slots <= 0 then
@@ -152,7 +154,7 @@ function Inventory:getFreeSlotCount()
   local used = 0
 
   for slot in pairs(self.stacks) do
-    if not IsHotbarSlotNumber(slot) then
+    if not IsHotbarSlot(slot) then
       used = used + 1
     end
   end
@@ -169,14 +171,14 @@ function Inventory:findMergeableSlots(instance)
   local found <const> = {}
 
   for slot, stack in pairs(self.stacks) do
-    local usable <const> = not IsHotbarSlotNumber(slot)
+    local usable <const> = not IsHotbarSlot(slot)
 
     if usable and CanStack(stack, instance) and GetStackRoom(stack) > 0 then
       found[#found + 1] = slot
     end
   end
 
-  table.sort(found)
+  SortSlots(found)
 
   return found
 end
@@ -205,7 +207,7 @@ function Inventory:getRemovalRelief(item, count, metadata, strict)
     end
   end
 
-  table.sort(matching)
+  SortSlots(matching)
 
   local unitWeight <const> = GetItemWeight(item)
   local remaining = count
@@ -227,7 +229,7 @@ function Inventory:getRemovalRelief(item, count, metadata, strict)
     if taken >= stack.count then
       weight = weight + GetFittedWeight(stack)
 
-      if not IsHotbarSlotNumber(slot) then
+      if not IsHotbarSlot(slot) then
         slots = slots + 1
       end
     end
@@ -548,12 +550,12 @@ end
 --- Every slot holding an item, in slot order.
 ---
 --- The hotbar is walked with the rest: a key holds a stack like any other, and
---- what comes back is the real slot number, so a slot this hands over can be
---- read or emptied without translating anything.
+--- what comes back is the identifier it actually sits under, so a slot this
+--- hands over can be read or emptied without translating anything.
 ---@param item string The internal item identifier.
 ---@param metadata? table Restricts it to instances carrying these properties.
 ---@param strict? boolean Whether the whole metadata must be identical.
----@return table slots The slot numbers, in order.
+---@return table slots The slot identifiers, in order.
 function Inventory:findSlots(item, metadata, strict)
   local found <const> = {}
 
@@ -563,7 +565,7 @@ function Inventory:findSlots(item, metadata, strict)
     end
   end
 
-  table.sort(found)
+  SortSlots(found)
 
   return found
 end
@@ -625,7 +627,7 @@ function Inventory:toPayload()
   for slot, stack in pairs(self.stacks) do
     local exposed <const> = BuildStackPayload(stack, slot)
 
-    if IsHotbarSlotNumber(slot) then
+    if IsHotbarSlot(slot) then
       hotbar[tostring(GetHotbarIndexOf(slot))] = exposed
     else
       stacks[tostring(slot)] = exposed

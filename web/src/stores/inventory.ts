@@ -17,6 +17,7 @@ import type {
   NearbyPlayer,
   PlayerInventory,
   SecondaryContainer,
+  SlotId,
 } from '@/types/inventory'
 
 const FALLBACK_CONFIG: InventoryConfig = { slots: 40, maxWeight: 35000, hotbarSlots: 5 }
@@ -143,12 +144,12 @@ export const useInventoryStore = defineStore('inventory', () => {
   const definitionOf = (item: string): ItemDefinition =>
     catalogue.value[item] ?? { ...UNKNOWN_DEFINITION, id: item, name: item }
 
-  const stackAt = (slot: number): ItemStack | undefined => inventory.value?.stacks[String(slot)]
+  const stackAt = (slot: SlotId): ItemStack | undefined => inventory.value?.stacks[String(slot)]
 
   const hotbarAt = (index: number): ItemStack | undefined =>
     inventory.value?.hotbar?.[String(index)]
 
-  const containerStackAt = (slot: number): ItemStack | undefined =>
+  const containerStackAt = (slot: SlotId): ItemStack | undefined =>
     container.value?.stacks[String(slot)]
 
   const hotbarSlots = computed(() =>
@@ -186,15 +187,15 @@ export const useInventoryStore = defineStore('inventory', () => {
     await bridge?.move({ from, to, count })
   }
 
-  const use = async (slot: number): Promise<void> => {
+  const use = async (slot: SlotId): Promise<void> => {
     await bridge?.use({ slot })
   }
 
-  const split = async (slot: number, count: number): Promise<void> => {
+  const split = async (slot: SlotId, count: number): Promise<void> => {
     await bridge?.split({ slot, count })
   }
 
-  const give = async (slot: number, count: number, target: number): Promise<void> => {
+  const give = async (slot: SlotId, count: number, target: number): Promise<void> => {
     await bridge?.give({ slot, count, target })
   }
 

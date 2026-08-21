@@ -32,7 +32,7 @@ function ResolveContainerSlot(reference, inventory, coords, sessionId)
       return nil, nil
     end
 
-    if slot and IsHotbarSlotNumber(slot) then
+    if slot and IsHotbarSlot(slot) then
       return nil, nil
     end
 
@@ -40,13 +40,13 @@ function ResolveContainerSlot(reference, inventory, coords, sessionId)
   end
 
   if container == 'hotbar' then
-    local index <const> = ReadSlot(reference.slot)
+    local index <const> = ReadIdentifier(reference.slot)
 
     if not index or not IsValidHotbarIndex(index) then
       return nil, nil
     end
 
-    return inventory, GetHotbarSlotNumber(index)
+    return inventory, GetHotbarSlotId(index)
   end
 
   if container == 'secondary' then
@@ -69,7 +69,7 @@ function ResolveContainerSlot(reference, inventory, coords, sessionId)
     return nil, nil
   end
 
-  local dropId <const> = ReadSlot(reference.dropId)
+  local dropId <const> = ReadIdentifier(reference.dropId)
 
   if not dropId then
     return nil, nil
