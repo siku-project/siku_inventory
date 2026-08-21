@@ -26,6 +26,8 @@ return {
   keybind_stash = 'Ouvrir la planque',
   inspect_unknown = 'Inconnu',
   confiscated_label = 'Objets confisqués',
+  trunk_label = 'Coffre %s',
+  glovebox_label = 'Boîte à gants %s',
 
   web = {
     ['inventory.title'] = 'Inventaire',
@@ -161,5 +163,6 @@ return {
     ['error.missing_component'] = 'Vous ne portez plus ce composant',
     ['error.target_unavailable'] = 'Ce joueur est indisponible',
     ['error.not_allowed'] = "Vous n'avez pas accès à ce conteneur",
+    ['error.no_storage'] = 'Ce véhicule n\'a pas de rangement',
   },
 }

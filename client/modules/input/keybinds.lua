@@ -16,6 +16,10 @@ Siku.AddKeybind({
       return
     end
 
+    if OpenReachableCompartment() then
+      return
+    end
+
     OpenInventoryScreen()
   end,
 })
