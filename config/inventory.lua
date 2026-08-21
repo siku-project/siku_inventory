@@ -130,13 +130,25 @@ InventoryConfig = {
   --- Default: true
   disableWeaponWheel = true,
 
+  --- Whether a firearm may be swung as a club.
+  ---
+  --- The game maps the melee swing to the same key as reloading, so a player
+  --- who means to reload pistol-whips whoever is in front of them instead.
+  --- Refusing the swing is what makes the key mean one thing.
+  ---
+  --- Only firearms are concerned: empty hands still throw a punch, and a blade
+  --- or a bat is held precisely to be swung.
+  ---
+  --- Default: true
+  disableWeaponBash = true,
+
   --- Key that opens the inventory.
   ---
   --- Uses the FiveM control name — see the RegisterKeyMapping documentation
   --- for the full list.
   ---
-  --- Default: 'i'
-  openKey = 'i',
+  --- Default: 'TAB'
+  openKey = 'TAB',
 
   --- Key that opens the stash a character is standing next to.
   ---
