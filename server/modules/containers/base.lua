@@ -18,11 +18,11 @@ function RegisterContainerKind(kind, behaviour)
     return false
   end
 
-  if not _SikuInternal.IsCallable(behaviour.resolve) then
+  if not IsCallable(behaviour.resolve) then
     return false
   end
 
-  if behaviour.validate ~= nil and not _SikuInternal.IsCallable(behaviour.validate) then
+  if behaviour.validate ~= nil and not IsCallable(behaviour.validate) then
     return false
   end
 

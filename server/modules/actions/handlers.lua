@@ -200,7 +200,7 @@ RegisterNetEvent('siku_inventory:server:move', function(payload)
   end
 
   local moved, reason = WithInventoryLock({ sourceInventory.id, targetInventory.id }, function()
-    if targetSlot and IsHotbarSlotNumber(targetSlot) then
+    if targetSlot and IsHotbarSlot(targetSlot) then
       if sourceInventory ~= inventory then
         return false, 'invalid_request'
       end
@@ -366,7 +366,7 @@ RegisterNetEvent('siku_inventory:server:give', function(payload)
   end
 
   local slot <const> = ReadSlot(payload.slot)
-  local targetId <const> = ReadSlot(payload.target)
+  local targetId <const> = ReadIdentifier(payload.target)
   local count <const> = payload.count ~= nil and ReadCount(payload.count) or nil
 
   if not slot or not targetId then

@@ -40,7 +40,7 @@ function SetGroupProvider(handler)
     return true
   end
 
-  if not _SikuInternal.IsCallable(handler) then
+  if not IsCallable(handler) then
     return false
   end
 
@@ -130,7 +130,7 @@ function SetStashAccess(name, handler)
     return true
   end
 
-  if not _SikuInternal.IsCallable(handler) then
+  if not IsCallable(handler) then
     return false
   end
 

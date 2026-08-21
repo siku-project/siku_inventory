@@ -10,7 +10,7 @@
 ---@param count number The quantity to detach.
 ---@return boolean split, string? reason Whether the stack was split, and why it was not otherwise.
 function SplitStack(inventory, slot, count)
-  if IsHotbarSlotNumber(slot) then
+  if IsHotbarSlot(slot) then
     return false, 'invalid_slot'
   end
 
