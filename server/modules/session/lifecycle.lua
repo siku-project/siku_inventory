@@ -61,6 +61,13 @@ function NotifyInventoryChanged(inventory)
   end
 end
 
+--- The session a character is being played on.
+---@param characterId any The character id.
+---@return number? sessionId The player server id, nil when nobody is playing it.
+function GetSessionOfCharacter(characterId)
+  return sessionByCharacter[characterId]
+end
+
 --- Loads the inventory of a character as soon as the core made it active, so
 --- the first interaction does not pay for a database round trip.
 ---@param sessionId number The player server id.

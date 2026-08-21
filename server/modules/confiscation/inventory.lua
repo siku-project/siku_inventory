@@ -122,6 +122,7 @@ function ConfiscateInventory(sessionId)
   end
 
   settle(sessionId, inventory, holding)
+  NotifySession(sessionId, 'warning', T('notify_confiscated', moved))
 
   return moved
 end
@@ -161,6 +162,14 @@ function ReturnInventory(sessionId)
   end
 
   settle(sessionId, inventory, holding)
+
+  --- What would not fit stayed held rather than falling on the floor, and that
+  --- is only reassuring if the player is told to come back for it.
+  if holding:isEmpty() then
+    NotifySession(sessionId, 'success', T('notify_returned', moved))
+  else
+    NotifySession(sessionId, 'warning', T('notify_returned_partial', moved))
+  end
 
   return moved
 end

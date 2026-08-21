@@ -389,12 +389,21 @@ function AddItem(target, item, count, metadata, slot)
   end) or 0
 
   if added <= 0 then
+    NotifyInventoryOwner(inventory, 'error', T('notify_no_room'))
+
     return 0, 'no_room'
   end
 
   SaveInventory(inventory)
   NotifyInventoryChanged(inventory)
   NotifyContainerChanged(inventory.id)
+
+  --- Only the shortfall is announced. What arrived is the caller's news to
+  --- tell, and it says it better: it knows what it was handing over. What
+  --- did not arrive is nobody else's to notice — it would simply be missing.
+  if added < count then
+    NotifyInventoryOwner(inventory, 'warning', T('notify_partial_add', count - added))
+  end
 
   return added
 end
@@ -521,6 +530,7 @@ function ClearInventory(target, keep)
   SaveInventory(inventory)
   NotifyInventoryChanged(inventory)
   NotifyContainerChanged(inventory.id)
+  NotifyInventoryOwner(inventory, 'warning', T('notify_cleared', removed))
 
   return removed
 end
@@ -737,8 +747,6 @@ function PublishMetadataDisplay(sessionId)
     GetRegisteredMetadataDisplay()
   )
 end
-
-PublishMetadataDisplay = publishMetadataDisplay
 
 --- Makes a metadata property visible on every item that carries one.
 ---
