@@ -232,11 +232,23 @@ RegisterNetEvent('siku_inventory:server:move', function(payload)
     NotifyDropsChanged(sessionId)
   end
 
+  --- Somebody may be holding this very bag open beside their own — a member of
+  --- staff administering it. Rearranging your own things has to reach them
+  --- too, or they are looking at a bag that has since moved on.
+  NotifyContainerChanged(inventory.id, sessionId)
+
+  --- Watchers are told, and so is whoever is carrying it. A second panel is
+  --- usually a stash or a boot, which nobody owns — but it can be another
+  --- character's bag, and that character is not watching their own inventory,
+  --- they are holding it. Without this their screen keeps showing what they
+  --- no longer have.
   if sourceInventory ~= inventory then
+    NotifyInventoryChanged(sourceInventory)
     NotifyContainerChanged(sourceInventory.id, sessionId)
   end
 
   if targetInventory ~= inventory and targetInventory ~= sourceInventory then
+    NotifyInventoryChanged(targetInventory)
     NotifyContainerChanged(targetInventory.id, sessionId)
   end
 
