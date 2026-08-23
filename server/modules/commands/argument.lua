@@ -7,7 +7,7 @@
 --- Refusing during parsing is what makes the answer useful. A command reaches
 --- its handler with a kind that exists, and a typo comes back as a refusal
 --- naming itself instead of as a request that quietly does nothing.
-Siku.RegisterCommandType('item', function(raw, def)
+Siku.command.registerType('item', function(raw, def)
   local item <const> = raw:lower()
 
   if not IsKnownItem(item) then

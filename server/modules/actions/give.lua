@@ -93,7 +93,7 @@ function GiveToSession(sessionId, targetId, slot, count)
 
   local label <const> = GetItemDefinitionPayload(outcome.item).label
 
-  Siku.Notification(targetId, {
+  Siku.notification.show(targetId, {
     type = 'success',
     title = T('notify_title'),
     description = T('notify_received', outcome.given, label),
@@ -102,7 +102,7 @@ function GiveToSession(sessionId, targetId, slot, count)
   if outcome.leftover > 0 then
     NotifyDropsChanged()
 
-    Siku.Notification(sessionId, {
+    Siku.notification.show(sessionId, {
       type = 'warning',
       title = T('notify_title'),
       description = T('notify_partial_give', outcome.leftover),

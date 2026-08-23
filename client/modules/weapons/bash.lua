@@ -26,13 +26,13 @@ end
 ---@return nil
 local function refuseBash(blocked)
   if blocked then
-    return Siku.UnsuppressDisabledControl(table.unpack(BASH_CONTROLS))
+    return Siku.controls.unsuppress(table.unpack(BASH_CONTROLS))
   end
 
-  Siku.SuppressDisabledControl(table.unpack(BASH_CONTROLS))
+  Siku.controls.suppress(table.unpack(BASH_CONTROLS))
 end
 
-Siku.AddDisabledControl(table.unpack(BASH_CONTROLS))
+Siku.controls.disable(table.unpack(BASH_CONTROLS))
 
 --- Hands start empty, so the punch is left alone until a firearm says otherwise.
 refuseBash(false)

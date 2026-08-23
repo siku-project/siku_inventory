@@ -1,6 +1,6 @@
 local SERIAL_PATTERN <const> = 'AA-1111-A'
 
-local Inventory <const> = CreateClass('SikuInventory')
+local Inventory <const> = Siku.class('SikuInventory')
 
 --- Builds the instance fields a fresh unit of an item starts life with. An
 --- instance carried over from somewhere else keeps its own; only something

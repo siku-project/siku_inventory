@@ -174,7 +174,7 @@ function MagazineOf(name, components)
     RemoveWeaponFromPed(ped, hash)
   end
 
-  Siku.RequestWeaponAsset(hash)
+  Siku.streaming.requestWeaponAsset(hash)
   GiveWeaponToPed(ped, hash, MEASURE_AMMO, false, false)
   fitComponents(ped, hash, fitted)
 
@@ -228,7 +228,7 @@ function SetDrawnWeapon(payload)
   local components <const> = payload.components or {}
   local ammo <const> = payload.takesAmmo and math.max(0, payload.ammo or 0) or 1
 
-  Siku.RequestWeaponAsset(hash)
+  Siku.streaming.requestWeaponAsset(hash)
   GiveWeaponToPed(ped, hash, ammo, false, true)
   fitComponents(ped, hash, components)
 
@@ -301,9 +301,9 @@ local function reportSpent()
   publishCurrentWeapon()
 end
 
-Siku.SetInterval(REPORT_INTERVAL, reportSpent)
+Siku.timers.setInterval(REPORT_INTERVAL, reportSpent)
 
-Siku.SetInterval(GUARD_INTERVAL, function()
+Siku.timers.setInterval(GUARD_INTERVAL, function()
   local ped <const> = PlayerPedId()
   local current <const> = GetSelectedPedWeapon(ped)
 
