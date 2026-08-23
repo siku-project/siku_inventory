@@ -34,7 +34,7 @@ if not InventoryConfig.disableWeaponWheel then
   return
 end
 
-Siku.AddDisabledControl(table.unpack(WHEEL_CONTROLS))
+Siku.controls.disable(table.unpack(WHEEL_CONTROLS))
 
 CreateThread(function()
   while true do

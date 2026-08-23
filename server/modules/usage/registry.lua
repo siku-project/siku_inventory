@@ -9,15 +9,15 @@ local handlers <const> = {}
 ---@param handler any The value the caller registered.
 ---@return table? behaviour The accepted behaviour, nil when the shape is wrong.
 local function readBehaviour(handler)
-  if IsCallable(handler) then
+  if Siku.isCallable(handler) then
     return { onUse = handler }
   end
 
-  if type(handler) ~= 'table' or not IsCallable(handler.onUse) then
+  if type(handler) ~= 'table' or not Siku.isCallable(handler.onUse) then
     return nil
   end
 
-  if handler.canUse ~= nil and not IsCallable(handler.canUse) then
+  if handler.canUse ~= nil and not Siku.isCallable(handler.canUse) then
     return nil
   end
 

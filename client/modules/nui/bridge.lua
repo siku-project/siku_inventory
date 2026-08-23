@@ -5,7 +5,7 @@ RegisterNUICallback('siku_inventory:nui:ready', function(_, cb)
     action = 'siku_inventory:nui:setLocale',
     locale = {
       language = TranslationConfig.language,
-      translations = GetTranslations(),
+      translations = Siku.locale.translations(),
     },
   })
 

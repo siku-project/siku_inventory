@@ -1,7 +1,7 @@
 local HOTBAR_KEYS <const> = { '1', '2', '3', '4', '5' }
 local RELOAD_KEY <const> = 'r'
 
-Siku.AddKeybind({
+Siku.keybind.add({
   name = 'siku_inventory_open',
   description = T('keybind_open'),
   defaultKey = InventoryConfig.openKey,
@@ -25,7 +25,7 @@ Siku.AddKeybind({
 })
 
 for index = 1, HOTBAR_SLOTS do
-  Siku.AddKeybind({
+  Siku.keybind.add({
     name = ('siku_inventory_hotbar_%d'):format(index),
     description = T('keybind_hotbar', index),
     defaultKey = HOTBAR_KEYS[index],
@@ -45,7 +45,7 @@ for index = 1, HOTBAR_SLOTS do
   })
 end
 
-Siku.AddKeybind({
+Siku.keybind.add({
   name = 'siku_inventory_reload',
   description = T('keybind_reload'),
   defaultKey = RELOAD_KEY,

@@ -12,9 +12,6 @@ lua54 'yes'
 shared_scripts {
   '@siku_core/init.lua',
   'config/*.lua',
-  'shared/utils/locale.lua',
-  'shared/utils/callable.lua',
-  'shared/utils/class.lua',
   'shared/items.lua',
   'shared/ammo.lua',
   'shared/weapons.lua',

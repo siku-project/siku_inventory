@@ -84,7 +84,7 @@ end
 local function runTimedUse(sessionId, slot, stack, useTime)
   TriggerClientEvent('siku_inventory:client:close', sessionId)
 
-  local started <const> = Siku.ProgressBar(sessionId, {
+  local started <const> = Siku.progress.bar(sessionId, {
     label = T('use_progress', GetItemDefinitionPayload(stack.item).label),
     duration = useTime,
   }, function(result)

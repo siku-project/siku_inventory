@@ -1,13 +1,13 @@
 local REQUIRED_CORE_VERSION <const> = '0.2.0'
 
-local dependency <const> = Siku.CheckDependency('siku_core', REQUIRED_CORE_VERSION)
+local dependency <const> = Siku.version.checkDependency('siku_core', REQUIRED_CORE_VERSION)
 
 if not dependency.ok then
   Siku.print.throw(dependency.message)
 end
 
 Siku.print.success(('Linked to siku_core (%s)'):format(dependency.currentVersion))
-Siku.VersionCheck('siku-project/siku_inventory')
+Siku.version.checkRelease('siku-project/siku_inventory')
 
 local faulty <const> = ValidateItemDefinitions()
 
@@ -33,7 +33,7 @@ end
 --- depends on, and a dependency only completes once the database answered, so
 --- waiting for it is already waiting for the database.
 CreateThread(function()
-  if not Siku.RunMigration(MigrationConfig) then
+  if not Siku.migration.run(MigrationConfig) then
     return
   end
 

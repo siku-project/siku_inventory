@@ -1,6 +1,6 @@
 local AUTOSAVE_INTERVAL <const> = 300000
 
-Siku.SetInterval(AUTOSAVE_INTERVAL, function()
+Siku.timers.setInterval(AUTOSAVE_INTERVAL, function()
   local saved <const> = SaveAllInventories()
 
   if saved > 0 then

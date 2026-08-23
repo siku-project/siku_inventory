@@ -75,7 +75,7 @@ end
 ---@param coords vector3 The position to watch.
 ---@return table handle The point handle.
 local function watchPosition(stash, coords)
-  return Siku.AddPoint({
+  return Siku.spatial.addPoint({
     coords = coords,
     radius = stash.distance,
     onEnter = function()
@@ -142,7 +142,7 @@ function OpenReachableStash()
   return stash ~= nil and OpenContainer('stash', { name = stash.name })
 end
 
-keybind = Siku.AddKeybind({
+keybind = Siku.keybind.add({
   name = 'siku_inventory_stash',
   description = T('keybind_stash'),
   defaultKey = InventoryConfig.stashKey,
