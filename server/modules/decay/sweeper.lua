@@ -48,7 +48,7 @@ local function sweepSpoiled()
   return removed
 end
 
-Siku.SetInterval(SWEEP_INTERVAL, function()
+Siku.timers.setInterval(SWEEP_INTERVAL, function()
   local removed <const> = sweepSpoiled()
 
   if removed > 0 then

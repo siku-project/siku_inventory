@@ -50,16 +50,16 @@ local function playLoad(uid, ammo)
 
   loading = true
 
-  Siku.AddDisabledControl(table.unpack(FIRING_CONTROLS))
+  Siku.controls.disable(table.unpack(FIRING_CONTROLS))
 
-  Siku.ProgressBar({
+  Siku.progress.bar({
     label = T('reload_progress'),
     icon = 'mdi-reload',
     duration = settings.duration or 2200,
   }, function()
     loading = false
 
-    Siku.RemoveDisabledControl(table.unpack(FIRING_CONTROLS))
+    Siku.controls.enable(table.unpack(FIRING_CONTROLS))
     ApplyLoadedAmmo(uid, ammo)
   end)
 end

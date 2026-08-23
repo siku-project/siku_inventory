@@ -58,7 +58,7 @@ end
 --- inventory takes what it has room for, so a nearly full bag ends up with
 --- less than was drawn rather than refusing the lot. What went in is what is
 --- reported back.
-Siku.RegisterCommand('randomitems', function(source, args)
+Siku.command.register('randomitems', function(source, args)
   local character <const> = GetSessionCharacter(source)
 
   if not character then
@@ -135,7 +135,7 @@ end
 ---
 --- Whoever is emptied is told by the inventory itself, so the only thing said
 --- here is what the person who asked did not already know.
-Siku.RegisterCommand('clearinv', function(source, args)
+Siku.command.register('clearinv', function(source, args)
   local targetId <const> = args.target or source
   local character <const> = GetSessionCharacter(targetId)
 
@@ -180,7 +180,7 @@ DeclareStaffPermission(CLEAR_PERMISSION)
 ---
 --- The target is named rather than assumed, because giving is what this is
 --- for; only the quantity may be left out, and one is what that means.
-Siku.RegisterCommand('giveitem', function(source, args)
+Siku.command.register('giveitem', function(source, args)
   local character <const> = GetSessionCharacter(args.target)
 
   if not character then

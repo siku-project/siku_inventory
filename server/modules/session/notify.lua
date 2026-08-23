@@ -13,7 +13,7 @@ function NotifySession(sessionId, kind, description)
     return
   end
 
-  Siku.Notification(sessionId, {
+  Siku.notification.show(sessionId, {
     type = kind,
     title = T('notify_title'),
     description = description,

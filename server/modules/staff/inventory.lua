@@ -108,7 +108,7 @@ RegisterContainerKind('staff', {
 --- Lives here rather than beside the other staff commands because the family
 --- it opens is registered here too, and a family has to be declared after the
 --- layer that accepts one.
-Siku.RegisterCommand('openinventorytarget', function(source, args)
+Siku.command.register('openinventorytarget', function(source, args)
   local opened <const>, reason <const> = OpenContainer(source, 'staff', { target = args.target })
 
   if not opened then

@@ -53,9 +53,9 @@ RegisterNetEvent('siku_inventory:client:actionRefused', function(reason)
     return
   end
 
-  local web <const> = GetTranslations().web or {}
+  local web <const> = Siku.locale.translations().web or {}
 
-  Siku.Notification({
+  Siku.notification.show({
     type = 'error',
     title = T('notify_title'),
     description = web['error.' .. key] or web['error.refused'] or key,

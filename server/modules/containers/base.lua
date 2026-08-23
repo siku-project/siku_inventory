@@ -18,11 +18,11 @@ function RegisterContainerKind(kind, behaviour)
     return false
   end
 
-  if not IsCallable(behaviour.resolve) then
+  if not Siku.isCallable(behaviour.resolve) then
     return false
   end
 
-  if behaviour.validate ~= nil and not IsCallable(behaviour.validate) then
+  if behaviour.validate ~= nil and not Siku.isCallable(behaviour.validate) then
     return false
   end
 
@@ -254,7 +254,7 @@ local function stillAllowed(sessionId, descriptor)
   return family.validate(sessionId, descriptor)
 end
 
-Siku.SetInterval(GUARD_INTERVAL, function()
+Siku.timers.setInterval(GUARD_INTERVAL, function()
   for sessionId, descriptor in pairs(opened) do
     local allowed <const>, reason <const> = stillAllowed(sessionId, descriptor)
 

@@ -4,7 +4,7 @@
 --- a target the server would not accept.
 ---@return table players The reachable characters.
 function GetNearbyPlayerList()
-  local ok <const>, players <const> = Siku.TriggerServerCallback(
+  local ok <const>, players <const> = Siku.callback.triggerServer(
     'siku_inventory:callback:nearbyPlayers'
   )
 

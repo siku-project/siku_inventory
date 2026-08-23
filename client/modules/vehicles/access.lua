@@ -67,7 +67,7 @@ function GetReachableTrunk()
   end
 
   local coords <const> = GetEntityCoords(ped)
-  local nearby <const> = Siku.GetNearbyVehicles(coords, SEARCH_RADIUS)
+  local nearby <const> = Siku.entity.getNearbyVehicles(coords, SEARCH_RADIUS)
   local closest = nil
   local shortest = TRUNK_REACH
 

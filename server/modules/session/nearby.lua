@@ -14,7 +14,7 @@ function GetNearbySessions(sessionId)
     return {}
   end
 
-  local nearby <const> = Siku.GetNearbyPlayers(coords, InventoryConfig.giveDistance, sessionId)
+  local nearby <const> = Siku.player.getNearby(coords, InventoryConfig.giveDistance, sessionId)
   local found <const> = {}
 
   for i = 1, #nearby do
@@ -33,6 +33,6 @@ function GetNearbySessions(sessionId)
   return found
 end
 
-Siku.RegisterCallback('siku_inventory:callback:nearbyPlayers', function(sessionId)
+Siku.callback.register('siku_inventory:callback:nearbyPlayers', function(sessionId)
   return GetNearbySessions(sessionId)
 end)

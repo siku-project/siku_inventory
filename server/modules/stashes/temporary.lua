@@ -156,6 +156,6 @@ function SweepExpiredStashes()
   return #expired
 end
 
-Siku.SetInterval(SWEEP_INTERVAL, function()
+Siku.timers.setInterval(SWEEP_INTERVAL, function()
   SweepExpiredStashes()
 end)
