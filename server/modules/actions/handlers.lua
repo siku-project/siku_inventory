@@ -129,6 +129,39 @@ RegisterNetEvent('siku_inventory:server:closeScreen', function()
   CloseSessionContainer(sessionId)
 end)
 
+local CLIENT_REQUEST_FIELDS <const> = {
+  stash = { 'name' },
+  trunk = { 'vehicle', 'class' },
+  glovebox = { 'vehicle', 'class' },
+  item = { 'uid' },
+  inspect = { 'target' },
+  staff = { 'target' },
+}
+
+--- Rebuilds a container request from the fields a client may name for that
+--- family. Whatever else it sent — an owner above all — never reaches a
+--- resolver: those fields belong to the server-side exports alone.
+---@param kind any The family the client named.
+---@param request any The request the client sent.
+---@return table? request The request a resolver may see, or nil when the family is unknown.
+local function readClientRequest(kind, request)
+  local fields <const> = type(kind) == 'string' and CLIENT_REQUEST_FIELDS[kind] or nil
+
+  if not fields then
+    return nil
+  end
+
+  local accepted <const> = {}
+
+  if type(request) == 'table' then
+    for i = 1, #fields do
+      accepted[fields[i]] = request[fields[i]]
+    end
+  end
+
+  return accepted
+end
+
 RegisterNetEvent('siku_inventory:server:openContainer', function(payload)
   local sessionId <const> = source
 
@@ -136,7 +169,14 @@ RegisterNetEvent('siku_inventory:server:openContainer', function(payload)
     return
   end
 
-  local opened <const>, reason <const> = OpenContainer(sessionId, payload.kind, payload.request)
+  local request <const> = readClientRequest(payload.kind, payload.request)
+
+  if not request then
+    refuse(sessionId, 'invalid_request')
+    return
+  end
+
+  local opened <const>, reason <const> = OpenContainer(sessionId, payload.kind, request)
 
   if not opened then
     refuse(sessionId, reason or 'refused')
