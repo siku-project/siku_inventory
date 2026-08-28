@@ -3,9 +3,10 @@ local HOLDING <const> = 'confiscated'
 --- Declares the container a confiscation is kept in, once.
 ---
 --- It is a stash like any other, which is what makes everything already
---- written work on it: it can be read, counted, added to and opened by a
---- script naming it. What it has not got is coords, so nobody opens it by
---- walking up to anything.
+--- written work on it: it can be read, counted and added to by a script
+--- naming it. It is never opened as a view, though: the access rule refuses
+--- everyone, so a client naming the stash gets nothing back, and what was
+--- taken only returns through the confiscation flow.
 ---
 --- Declared on first use rather than at load, because the stash registry is
 --- read later than this file is.
@@ -17,13 +18,21 @@ local function holdingDefinition()
     return declared
   end
 
-  return RegisterStashDefinition({
+  local definition <const> = RegisterStashDefinition({
     name = HOLDING,
     label = T('confiscated_label'),
     slots = InventoryConfig.slots + HOTBAR_SLOTS,
     maxWeight = 0,
     owner = true,
   })
+
+  if definition then
+    SetStashAccess(HOLDING, function()
+      return false
+    end)
+  end
+
+  return definition
 end
 
 --- The container holding what was taken from a character.
