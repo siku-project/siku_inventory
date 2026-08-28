@@ -20,92 +20,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-
-      - name: Install Lua 5.4
-        run: sudo apt-get update && sudo apt-get install -y lua5.4
-
-      - name: Compile every Lua file
-        run: |
-          set -euo pipefail
-          count=0
-          while IFS= read -r -d '' file; do
-            luac5.4 -p "$file"
-            count=$((count + 1))
-          done < <(find . -name '*.lua' -not -path './.git/*' -print0)
-          echo "$count Lua file(s) compile"
+      - uses: siku-project/siku_ci/actions/lua-syntax@v1
 
   manifest:
     name: manifest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-
-      - name: Install Lua 5.4
-        run: sudo apt-get update && sudo apt-get install -y lua5.4
-
-      - name: Check fxmanifest coherence
-        run: lua5.4 .github/scripts/check-manifest.lua
+      - uses: siku-project/siku_ci/actions/manifest@v1
 
   web:
     name: web
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web
     steps:
       - uses: actions/checkout@v5
-
-      - name: Setup bun
-        uses: oven-sh/setup-bun@v2
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
-
-      - name: Locale parity
-        run: node ../.github/scripts/check-locales.mjs
-
-      - name: Formatting
-        run: bunx prettier --check src/
-
-      - name: Types
-        run: bunx vue-tsc --build --force
-
-      - name: Lint — oxlint
-        run: bunx oxlint .
-
-      - name: Lint — eslint
-        run: bunx eslint .
-
-      - name: Build
-        run: bunx vite build
+      - uses: siku-project/siku_ci/actions/web-checks@v1
+        with:
+          locales: 'true'
 
   guard:
     name: guard
     runs-on: ubuntu-latest
     steps:
-      - name: Only dev may open a pull request against main
-        env:
-          EVENT: ${{ github.event_name }}
-          BASE: ${{ github.base_ref }}
-          HEAD: ${{ github.head_ref }}
-        run: |
-          set -euo pipefail
-
-          if [ "$EVENT" != "pull_request" ]; then
-            echo "Not a pull request, nothing to guard."
-            exit 0
-          fi
-
-          echo "Pull request: $HEAD -> $BASE"
-
-          if [ "$BASE" = "main" ] && [ "$HEAD" != "dev" ]; then
-            echo "::error::main only accepts pull requests coming from dev. Retarget this pull request to dev."
-            exit 1
-          fi
-
-          if [ "$BASE" = "dev" ] && [ "$HEAD" = "main" ]; then
-            echo "::error::dev must not be updated from main. Work flows dev -> main, never the other way."
-            exit 1
-          fi
-
-          echo "Branch flow is valid."
+      - uses: siku-project/siku_ci/actions/branch-guard@v1
