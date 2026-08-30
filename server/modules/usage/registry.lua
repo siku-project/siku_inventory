@@ -105,23 +105,14 @@ function AllowsItemUse(sessionId, slot, stack)
   return allowed ~= false
 end
 
---- Runs the behaviour bound to an item, if any. The context hands over a
---- consume helper rather than the inventory itself, so a behaviour can spend
---- the item without being able to rewrite everything else.
----@param sessionId number The player server id.
+--- Builds the context handed to a behaviour: the description of the instance
+--- plus consume helpers bound to it, so a behaviour can spend the item
+--- without being able to rewrite everything else.
 ---@param inventory table The character inventory.
 ---@param slot number The slot holding the item.
 ---@param stack table The stack being used.
----@return nil
-function RunItemUse(sessionId, inventory, slot, stack)
-  local behaviour <const> = handlers[stack.item]
-
-  if not behaviour then
-    Siku.print.debug(('No use handler bound to %q'):format(stack.item))
-
-    return
-  end
-
+---@return table context The behaviour context.
+local function buildContext(inventory, slot, stack)
   local context <const> = describe(slot, stack)
 
   context.consume = function(quantity)
@@ -171,6 +162,79 @@ function RunItemUse(sessionId, inventory, slot, stack)
     return left > 0 and left or nil
   end
 
+  return context
+end
+
+--- Runs the use an item declared in the catalogue through its client and
+--- server exports. The server export decides whether the unit is spent by
+--- returning true; the client export is told afterwards, for whatever
+--- happens on the player's side.
+---@param sessionId number The player server id.
+---@param inventory table The character inventory.
+---@param slot number The slot holding the item.
+---@param stack table The stack being used.
+---@return nil
+local function runDeclaredUse(sessionId, inventory, slot, stack)
+  local serverTarget <const> = GetItemUseExport(stack.item, 'server')
+  local clientTarget <const> = GetItemUseExport(stack.item, 'client')
+
+  if not serverTarget and not clientTarget then
+    Siku.print.debug(('No use handler bound to %q'):format(stack.item))
+
+    return
+  end
+
+  local payload <const> = describe(slot, stack)
+  payload.status = GetItemStatusEffects(stack.item)
+
+  if serverTarget then
+    local ok <const>, result <const> = pcall(function()
+      return exports[serverTarget.resource][serverTarget.export](sessionId, payload)
+    end)
+
+    if not ok then
+      Siku.print.error(T('use_handler_failed', stack.item, tostring(result)))
+
+      return
+    end
+
+    if result == true then
+      local context <const> = buildContext(inventory, slot, stack)
+
+      if type(stack.uses) == 'number' then
+        context.spendUse(1)
+      else
+        context.consume(1)
+      end
+    end
+  end
+
+  if clientTarget then
+    TriggerClientEvent(
+      'siku_inventory:client:useExport',
+      sessionId,
+      clientTarget.resource,
+      clientTarget.export,
+      payload
+    )
+  end
+end
+
+--- Runs the behaviour bound to an item: what a resource registered at
+--- runtime first, otherwise what the definition itself declared.
+---@param sessionId number The player server id.
+---@param inventory table The character inventory.
+---@param slot number The slot holding the item.
+---@param stack table The stack being used.
+---@return nil
+function RunItemUse(sessionId, inventory, slot, stack)
+  local behaviour <const> = handlers[stack.item]
+
+  if not behaviour then
+    return runDeclaredUse(sessionId, inventory, slot, stack)
+  end
+
+  local context <const> = buildContext(inventory, slot, stack)
   local ok <const>, err <const> = pcall(behaviour.onUse, sessionId, context)
 
   if not ok then
