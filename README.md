@@ -2,7 +2,7 @@
 
 The official inventory system of the SIKU ecosystem — a modern, modular and high-performance resource for managing items, weight, hotbars, ground drops, metadata, unique item instances, and seamless player interactions.
 
-![Version](https://img.shields.io/badge/version-0.6.0-4785bd)
+![Version](https://img.shields.io/badge/version-1.0.0-4785bd)
 ![FiveM](https://img.shields.io/badge/fx__version-cerulean-4785bd)
 ![Lua](https://img.shields.io/badge/Lua-5.4-4785bd)
 ![Vue](https://img.shields.io/badge/NUI-Vue%203-4785bd)
