@@ -1,5 +1,6 @@
 local UNKNOWN_LABEL <const> = 'item.unknown'
 local TYPES <const> = { item = true, weapon = true, component = true }
+local USE_EXPORT_SIDES <const> = { 'client', 'server' }
 
 --- Reads the definition of an item kind.
 ---@param item string The internal item identifier.
@@ -153,6 +154,41 @@ function GetItemUseTime(item)
   local useTime <const> = definition and definition.useTime
 
   return type(useTime) == 'number' and useTime > 0 and useTime or nil
+end
+
+--- The status changes a consumable declares, handed to its use export so the
+--- status resource never needs to know the catalogue.
+---@param item string The internal item identifier.
+---@return table? status A copy of the declared map, or nil.
+function GetItemStatusEffects(item)
+  local definition <const> = GetItemDefinition(item)
+
+  if not definition or type(definition.status) ~= 'table' then
+    return nil
+  end
+
+  return Siku.table.deepClone(definition.status)
+end
+
+--- The export an item declared for one side of its use, as 'resource.name'.
+---@param item string The internal item identifier.
+---@param side string 'client' or 'server'.
+---@return table? target The { resource, export } pair, or nil.
+function GetItemUseExport(item, side)
+  local definition <const> = GetItemDefinition(item)
+  local declared <const> = definition and definition[side]
+
+  if type(declared) ~= 'table' or type(declared.export) ~= 'string' then
+    return nil
+  end
+
+  local resource <const>, export <const> = declared.export:match('^([%w_%-]+)%.([%w_]+)$')
+
+  if not resource then
+    return nil
+  end
+
+  return { resource = resource, export = export }
 end
 
 --- Whether a spoiled instance of this kind is thrown away rather than kept.
@@ -384,6 +420,34 @@ local function faultsOf(definition)
         if type(definition.variants[i]) ~= 'string' then
           faults[#faults + 1] = ('variants[%d] is not a component name'):format(i)
         end
+      end
+    end
+  end
+
+  if definition.status ~= nil then
+    if type(definition.status) ~= 'table' then
+      faults[#faults + 1] = 'status must map status names to numbers'
+    else
+      for statusName, amount in pairs(definition.status) do
+        if type(statusName) ~= 'string' or type(amount) ~= 'number' then
+          faults[#faults + 1] = 'status must map status names to numbers'
+          break
+        end
+      end
+    end
+  end
+
+  for index = 1, #USE_EXPORT_SIDES do
+    local side <const> = USE_EXPORT_SIDES[index]
+    local declaredUse <const> = definition[side]
+
+    if declaredUse ~= nil then
+      if
+        type(declaredUse) ~= 'table'
+        or type(declaredUse.export) ~= 'string'
+        or not declaredUse.export:match('^[%w_%-]+%.[%w_]+$')
+      then
+        faults[#faults + 1] = ("%s.export must name 'resource.exportName'"):format(side)
       end
     end
   end

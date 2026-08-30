@@ -85,6 +85,10 @@ Items = {
 
     decay = 1,
     removeOnDecay = false,
+
+    useTime = 2000,
+    status = { thirst = 25 },
+    server = { export = 'siku_status.Consume' },
   },
 
   bread = {
@@ -104,6 +108,423 @@ Items = {
 
     decay = 6,
     removeOnDecay = true,
+
+    useTime = 2500,
+    status = { hunger = 15 },
+    server = { export = 'siku_status.Consume' },
+  },
+
+  burger = {
+    name = 'burger',
+    label = 'Burger',
+    type = 'item',
+
+    weight = 220,
+    image = 'burger.svg',
+
+    stackable = true,
+    unique = false,
+    usable = true,
+    closeOnUse = true,
+
+    description = 'Double steak, cheddar fondu, pain brioché.',
+
+    decay = 6,
+    removeOnDecay = true,
+
+    useTime = 3000,
+    status = { hunger = 35 },
+    server = { export = 'siku_status.Consume' },
+  },
+
+  sandwich = {
+    name = 'sandwich',
+    label = 'Sandwich',
+    type = 'item',
+
+    weight = 180,
+    image = 'sandwich.svg',
+
+    stackable = true,
+    unique = false,
+    usable = true,
+    closeOnUse = true,
+
+    description = 'Jambon, beurre, cornichons — un classique.',
+
+    decay = 6,
+    removeOnDecay = true,
+
+    useTime = 2500,
+    status = { hunger = 25 },
+    server = { export = 'siku_status.Consume' },
+  },
+
+  chocolate = {
+    name = 'chocolate',
+    label = 'Barre chocolatée',
+    type = 'item',
+
+    weight = 80,
+    image = 'chocolate.svg',
+
+    stackable = true,
+    unique = false,
+    usable = true,
+    closeOnUse = true,
+
+    description = 'Du sucre, du cacao, du réconfort.',
+
+    useTime = 1500,
+    status = { hunger = 10 },
+    server = { export = 'siku_status.Consume' },
+  },
+
+  donut = {
+    name = 'donut',
+    label = 'Donut',
+    type = 'item',
+
+    weight = 90,
+    image = 'donut.svg',
+
+    stackable = true,
+    unique = false,
+    usable = true,
+    closeOnUse = true,
+
+    description = 'Glaçage rose, saupoudré de vermicelles.',
+
+    decay = 4,
+    removeOnDecay = true,
+
+    useTime = 2000,
+    status = { hunger = 12 },
+    server = { export = 'siku_status.Consume' },
+  },
+
+  taco = {
+    name = 'taco',
+    label = 'Taco',
+    type = 'item',
+
+    weight = 150,
+    image = 'taco.svg',
+
+    stackable = true,
+    unique = false,
+    usable = true,
+    closeOnUse = true,
+
+    description = 'Bœuf épicé, salsa maison, tortilla croustillante.',
+
+    decay = 6,
+    removeOnDecay = true,
+
+    useTime = 2500,
+    status = { hunger = 22, thirst = -5 },
+    server = { export = 'siku_status.Consume' },
+  },
+
+  hotdog = {
+    name = 'hotdog',
+    label = 'Hot-dog',
+    type = 'item',
+
+    weight = 160,
+    image = 'hotdog.svg',
+
+    stackable = true,
+    unique = false,
+    usable = true,
+    closeOnUse = true,
+
+    description = 'Saucisse grillée, moutarde, oignons frits.',
+
+    decay = 6,
+    removeOnDecay = true,
+
+    useTime = 2500,
+    status = { hunger = 20 },
+    server = { export = 'siku_status.Consume' },
+  },
+
+  apple = {
+    name = 'apple',
+    label = 'Pomme',
+    type = 'item',
+
+    weight = 120,
+    image = 'apple.svg',
+
+    stackable = true,
+    unique = false,
+    usable = true,
+    closeOnUse = true,
+
+    description = 'Croquante, à peine acidulée.',
+
+    decay = 3,
+    removeOnDecay = true,
+
+    useTime = 2000,
+    status = { hunger = 12, thirst = 4 },
+    server = { export = 'siku_status.Consume' },
+  },
+
+  croissant = {
+    name = 'croissant',
+    label = 'Croissant',
+    type = 'item',
+
+    weight = 70,
+    image = 'croissant.svg',
+
+    stackable = true,
+    unique = false,
+    usable = true,
+    closeOnUse = true,
+
+    description = 'Pur beurre, encore feuilleté du matin.',
+
+    decay = 5,
+    removeOnDecay = true,
+
+    useTime = 2000,
+    status = { hunger = 14 },
+    server = { export = 'siku_status.Consume' },
+  },
+
+  chips = {
+    name = 'chips',
+    label = 'Paquet de chips',
+    type = 'item',
+
+    weight = 120,
+    image = 'chips.svg',
+
+    stackable = true,
+    unique = false,
+    usable = true,
+    closeOnUse = true,
+
+    description = 'Salées comme il faut — prévoir de quoi boire.',
+
+    useTime = 2500,
+    status = { hunger = 10, thirst = -8 },
+    server = { export = 'siku_status.Consume' },
+  },
+
+  pizza_slice = {
+    name = 'pizza_slice',
+    label = 'Part de pizza',
+    type = 'item',
+
+    weight = 130,
+    image = 'pizza_slice.svg',
+
+    stackable = true,
+    unique = false,
+    usable = true,
+    closeOnUse = true,
+
+    description = 'Une part encore chaude, fromage filant.',
+
+    decay = 6,
+    removeOnDecay = true,
+
+    useTime = 2500,
+    status = { hunger = 28 },
+    server = { export = 'siku_status.Consume' },
+  },
+
+  cola = {
+    name = 'cola',
+    label = 'Canette de cola',
+    type = 'item',
+
+    weight = 330,
+    image = 'cola.svg',
+
+    stackable = true,
+    unique = false,
+    usable = true,
+    closeOnUse = true,
+
+    description = 'Bien fraîche, bien sucrée.',
+
+    useTime = 2000,
+    status = { thirst = 20, hunger = 3 },
+    server = { export = 'siku_status.Consume' },
+  },
+
+  orange_juice = {
+    name = 'orange_juice',
+    label = 'Jus d\'orange',
+    type = 'item',
+
+    weight = 330,
+    image = 'orange_juice.svg',
+
+    stackable = true,
+    unique = false,
+    usable = true,
+    closeOnUse = true,
+
+    description = 'Pressé le matin même.',
+
+    decay = 3,
+    removeOnDecay = false,
+
+    useTime = 2000,
+    status = { thirst = 22, hunger = 4 },
+    server = { export = 'siku_status.Consume' },
+  },
+
+  coffee = {
+    name = 'coffee',
+    label = 'Café',
+    type = 'item',
+
+    weight = 250,
+    image = 'coffee.svg',
+
+    stackable = true,
+    unique = false,
+    usable = true,
+    closeOnUse = true,
+
+    description = 'Un gobelet brûlant, serré.',
+
+    useTime = 2000,
+    status = { thirst = 10 },
+    server = { export = 'siku_status.Consume' },
+  },
+
+  milk = {
+    name = 'milk',
+    label = 'Brique de lait',
+    type = 'item',
+
+    weight = 500,
+    image = 'milk.svg',
+
+    stackable = true,
+    unique = false,
+    usable = true,
+    closeOnUse = true,
+
+    description = 'Demi-écrémé, à garder au frais.',
+
+    decay = 4,
+    removeOnDecay = false,
+
+    useTime = 2000,
+    status = { thirst = 18, hunger = 6 },
+    server = { export = 'siku_status.Consume' },
+  },
+
+  energy_drink = {
+    name = 'energy_drink',
+    label = 'Boisson énergisante',
+    type = 'item',
+
+    weight = 250,
+    image = 'energy_drink.svg',
+
+    stackable = true,
+    unique = false,
+    usable = true,
+    closeOnUse = true,
+
+    description = 'Taurine, caféine et mauvaises idées.',
+
+    useTime = 2000,
+    status = { thirst = 15 },
+    server = { export = 'siku_status.Consume' },
+  },
+
+  lemonade = {
+    name = 'lemonade',
+    label = 'Limonade',
+    type = 'item',
+
+    weight = 330,
+    image = 'lemonade.svg',
+
+    stackable = true,
+    unique = false,
+    usable = true,
+    closeOnUse = true,
+
+    description = 'Citron pressé, eau pétillante, un peu de sucre.',
+
+    useTime = 2000,
+    status = { thirst = 20 },
+    server = { export = 'siku_status.Consume' },
+  },
+
+  iced_tea = {
+    name = 'iced_tea',
+    label = 'Thé glacé',
+    type = 'item',
+
+    weight = 330,
+    image = 'iced_tea.svg',
+
+    stackable = true,
+    unique = false,
+    usable = true,
+    closeOnUse = true,
+
+    description = 'Pêche, servi très frais.',
+
+    useTime = 2000,
+    status = { thirst = 20 },
+    server = { export = 'siku_status.Consume' },
+  },
+
+  milkshake = {
+    name = 'milkshake',
+    label = 'Milkshake',
+    type = 'item',
+
+    weight = 400,
+    image = 'milkshake.svg',
+
+    stackable = true,
+    unique = false,
+    usable = true,
+    closeOnUse = true,
+
+    description = 'Vanille onctueuse, chantilly en prime.',
+
+    decay = 7,
+    removeOnDecay = true,
+
+    useTime = 2500,
+    status = { thirst = 18, hunger = 14 },
+    server = { export = 'siku_status.Consume' },
+  },
+
+  sparkling_water = {
+    name = 'sparkling_water',
+    label = 'Eau pétillante',
+    type = 'item',
+
+    weight = 500,
+    image = 'sparkling_water.svg',
+
+    stackable = true,
+    unique = false,
+    usable = true,
+    closeOnUse = true,
+
+    description = 'Fines bulles, sans sucre.',
+
+    useTime = 2000,
+    status = { thirst = 24 },
+    server = { export = 'siku_status.Consume' },
   },
 
   bandage = {

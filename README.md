@@ -2,7 +2,7 @@
 
 The official inventory system of the SIKU ecosystem — a modern, modular and high-performance resource for managing items, weight, hotbars, ground drops, metadata, unique item instances, and seamless player interactions.
 
-![Version](https://img.shields.io/badge/version-0.5.0-4785bd)
+![Version](https://img.shields.io/badge/version-0.6.0-4785bd)
 ![FiveM](https://img.shields.io/badge/fx__version-cerulean-4785bd)
 ![Lua](https://img.shields.io/badge/Lua-5.4-4785bd)
 ![Vue](https://img.shields.io/badge/NUI-Vue%203-4785bd)
@@ -82,6 +82,19 @@ The `shared/` data files are the source of truth, validated at startup — a mis
 | File | Declares |
 |---|---|
 | `shared/items.lua` | Item kinds: identity, label, weight, stacking, uniqueness, usability, decay, uses. The file header documents every field. |
+
+A definition may also declare its use behavior in place, without any resource registering a handler at runtime:
+
+```lua
+burger = {
+  -- …
+  status = { hunger = 35 },                      -- handed to the use export
+  server = { export = 'siku_status.Consume' },   -- called on use; returning true spends the unit
+  client = { export = 'my_resource.OnEat' },     -- optional, told after the server side, for effects
+},
+```
+
+A behavior registered through `RegisterItemUse` always wins over the declaration. This is how every food and drink in the catalogue feeds [`siku_status`](https://github.com/siku-project/siku_status).
 | `shared/weapons.lua`, `shared/ammo.lua`, `shared/components.lua` | Weapons, their ammunition and attachments. |
 | `shared/stashes.lua` | Stashes declared with the resource: label, slots, weight, coords, access. |
 | `shared/vehicles.lua` | Trunk and glovebox capacities per vehicle class. |
