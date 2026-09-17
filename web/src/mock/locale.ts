@@ -91,6 +91,8 @@ export const FR_MESSAGES: Record<string, string> = {
   'item.meta.cardNumber': 'Numéro',
   'item.meta.expiresAt': 'Expire le',
   'item.meta.phoneNumber': 'Numéro',
+  'item.meta.frequency': 'Fréquence',
+  'item.meta.channel': 'Canal',
   'item.meta.purity': 'Pureté',
   'item.meta.origin': 'Provenance',
   'item.meta.amount': 'Montant',
