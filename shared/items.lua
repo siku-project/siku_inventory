@@ -643,11 +643,18 @@ Items = {
     image = 'radio.png',
 
     stackable = false,
-    unique = false,
+    unique = true,
     usable = true,
     closeOnUse = true,
 
-    description = 'Un émetteur-récepteur portatif.',
+    description = 'Un émetteur-récepteur portatif. Il garde sa fréquence, son canal et son volume.',
+
+    metadata = {
+      display = {
+        { key = 'frequency', label = 'item.meta.frequency' },
+        { key = 'channel', label = 'item.meta.channel' },
+      },
+    },
   },
 
   cash = {
