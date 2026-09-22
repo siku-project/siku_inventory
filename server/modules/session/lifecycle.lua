@@ -1,33 +1,9 @@
-local sessionByCharacter <const> = {}
-local characterBySession <const> = {}
-local identityBySession <const> = {}
-
---- Forgets the character a session was playing, releasing its inventory from
---- the cache. Both directions of the mapping are kept here rather than asked
---- back from the core: by the time a player drops, the core may already have
---- cleared its own cache, and an inventory nobody can name is an inventory
---- nobody writes back.
----@param sessionId number The player server id.
----@param persist boolean Whether the inventory should be written before it goes.
+--- Writes back and drops the inventory of a character that left play. Who
+--- was playing it is not kept here: the core announces the character id
+--- itself, before its cache forgets the player.
+---@param characterId number The character id.
 ---@return nil
-local function forgetSession(sessionId, persist)
-  local characterId <const> = characterBySession[sessionId]
-
-  if not characterId then
-    return
-  end
-
-  characterBySession[sessionId] = nil
-  identityBySession[sessionId] = nil
-
-  if sessionByCharacter[characterId] == sessionId then
-    sessionByCharacter[characterId] = nil
-  end
-
-  if not persist then
-    return
-  end
-
+local function releaseCharacter(characterId)
   local inventory <const> = GetOwnedInventory('character', characterId)
 
   if inventory then
@@ -35,13 +11,18 @@ local function forgetSession(sessionId, persist)
   end
 end
 
---- Reads the name of the character a session is playing. The core keeps the
---- character but not its civil identity, so the row handed over when the
---- character became active is remembered here.
+--- The name of the character a session is playing, read from the core's
+--- character, which carries the whole identity.
 ---@param sessionId number The player server id.
----@return table? identity The first and last name of the character.
+---@return table? identity { firstName, lastName }, nil when no character is in play.
 function GetSessionIdentity(sessionId)
-  return identityBySession[sessionId]
+  local character <const> = GetSessionCharacter(sessionId)
+
+  if not character then
+    return nil
+  end
+
+  return { firstName = character.firstName, lastName = character.lastName }
 end
 
 --- Pushes a fresh state to whoever is currently holding an inventory, so an
@@ -54,18 +35,29 @@ function NotifyInventoryChanged(inventory)
     return
   end
 
-  local sessionId <const> = sessionByCharacter[inventory.ownerId]
+  local sessionId <const> = Siku.cache.getSessionByCharacter(inventory.ownerId)
 
   if sessionId then
     PushInventoryState(sessionId)
   end
 end
 
---- The session a character is being played on.
+--- The session a character is being played on, answered by the core cache.
 ---@param characterId any The character id.
 ---@return number? sessionId The player server id, nil when nobody is playing it.
 function GetSessionOfCharacter(characterId)
-  return sessionByCharacter[characterId]
+  return Siku.cache.getSessionByCharacter(characterId)
+end
+
+--- Tells a client who it is, for the screens that show a name.
+---@param sessionId number The player server id.
+---@return nil
+local function pushIdentity(sessionId)
+  local identity <const> = GetSessionIdentity(sessionId)
+
+  if identity then
+    TriggerClientEvent('siku_inventory:client:setIdentity', sessionId, identity)
+  end
 end
 
 --- Loads the inventory of a character as soon as the core made it active, so
@@ -82,19 +74,7 @@ local function handleCharacterReady(sessionId, characterData)
     return
   end
 
-  forgetSession(sessionId, true)
-
-  sessionByCharacter[characterData.id] = sessionId
-  characterBySession[sessionId] = characterData.id
-
-  local identity <const> = {
-    firstName = characterData.first_name,
-    lastName = characterData.last_name,
-  }
-
-  identityBySession[sessionId] = identity
-
-  TriggerClientEvent('siku_inventory:client:setIdentity', sessionId, identity)
+  pushIdentity(sessionId)
   PublishStashPoints(sessionId)
   PublishMetadataDisplay(sessionId)
 
@@ -111,62 +91,42 @@ local function handleCharacterReady(sessionId, characterData)
   Siku.print.debug(('Inventory %d ready for character %d'):format(inventory.id, characterData.id))
 end
 
---- Rebuilds what a restart erased, for the players already in the world.
----
---- A character becomes active once, and everyone playing when this resource
---- restarts already went through that moment. Nothing replays it: the core
---- keeps the character but not its civil identity, so the names cannot be
---- asked back from it and are read from where they came from instead.
----
---- Without this the resource looks fine and quietly is not: the give dialog
---- lists nobody, because a session with no remembered name is skipped, and an
---- item handed over by another resource never reaches an open screen, because
---- the character behind it maps to no session.
+--- Writes back the inventory of a character the core took out of play, on
+--- a switch as on a disconnect.
+---@param _ number The player server id.
+---@param characterId number The character id.
 ---@return nil
-function RestoreConnectedSessions()
-  local wanted <const> = {}
-
-  Siku.cache.forEach(function(sessionId)
-    local character <const> = GetSessionCharacter(sessionId)
-
-    if character then
-      sessionByCharacter[character.id] = sessionId
-      characterBySession[sessionId] = character.id
-      wanted[#wanted + 1] = character.id
-    end
-  end)
-
-  if #wanted == 0 then
+local function handleCharacterReleased(_, characterId)
+  if type(characterId) ~= 'number' then
     return
   end
 
-  local rows <const> = MySQL.query.await(
-    ('SELECT id, first_name, last_name FROM characters WHERE id IN (%s)')
-      :format(string.rep('?', #wanted, ',')),
-    wanted
-  ) or {}
+  releaseCharacter(characterId)
+end
 
-  for i = 1, #rows do
-    local sessionId <const> = sessionByCharacter[rows[i].id]
+--- Pushes what a restart erased to the players already in the world.
+---
+--- A character becomes active once, and everyone playing when this resource
+--- restarts already went through that moment. Nothing replays it, so the
+--- open screens are fed again from the core's cache, which kept every
+--- character.
+---@return nil
+function RestoreConnectedSessions()
+  local restored = 0
 
-    if sessionId then
-      local identity <const> = {
-        firstName = rows[i].first_name,
-        lastName = rows[i].last_name,
-      }
+  Siku.cache.forEach(function(sessionId)
+    if GetSessionCharacter(sessionId) then
+      restored = restored + 1
 
-      identityBySession[sessionId] = identity
-
-      TriggerClientEvent('siku_inventory:client:setIdentity', sessionId, identity)
+      pushIdentity(sessionId)
       PushInventoryState(sessionId)
     end
-  end
+  end)
 
-  Siku.print.debug(('Restored %d session(s) after restart'):format(#rows))
+  if restored > 0 then
+    Siku.print.debug(('Restored %d session(s) after restart'):format(restored))
+  end
 end
 
 AddEventHandler('siku:server:createCharacterInstance', handleCharacterReady)
-
-AddEventHandler('playerDropped', function()
-  forgetSession(source, true)
-end)
+AddEventHandler('siku:server:releaseCharacterInstance', handleCharacterReleased)
