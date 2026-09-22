@@ -1,5 +1,7 @@
 local REPORT_INTERVAL <const> = 400
 local GUARD_INTERVAL <const> = 500
+local ASSET_TIMEOUT <const> = 2000
+local THROW_SETTLE_MS <const> = 700
 local UNARMED <const> = GetHashKey('WEAPON_UNARMED')
 local MEASURE_AMMO <const> = 0
 local MINIMUM_MAGAZINE <const> = 1
@@ -53,6 +55,22 @@ local function magazineKey(name, components)
   table.sort(parts)
 
   return ('%s|%s'):format(name, table.concat(parts, ','))
+end
+
+--- Warms the weapon asset up so the model is there the moment it is drawn.
+---
+--- Never fatal: the game streams what it needs when the weapon is given, and
+--- a thrown charge or a gadget may never report its asset as loaded. Waiting
+--- longer than a moment, or giving up on the draw, would leave the hands
+--- empty for nothing.
+---@param hash number The weapon hash.
+---@return nil
+local function warmWeaponAsset(hash)
+  local ok <const>, err <const> = pcall(Siku.streaming.requestWeaponAsset, hash, ASSET_TIMEOUT)
+
+  if not ok then
+    Siku.print.debug(('Weapon asset %s not preloaded: %s'):format(hash, tostring(err)))
+  end
 end
 
 --- Asks the game what a weapon on the ped holds once full.
@@ -119,6 +137,8 @@ function GetCurrentWeapon()
     hotbar = drawn.slot and IsHotbarSlot(drawn.slot) and GetHotbarIndexOf(drawn.slot) or nil,
     weight = weightOf(drawn),
     melee = definition ~= nil and definition.category == 'melee',
+    throwable = drawn.throwable,
+    count = drawn.throwable and drawn.count or nil,
     ammoItem = drawn.takesAmmo and definition and definition.ammoType or nil,
     ammo = loaded,
     magazine = drawn.takesAmmo and drawn.magazine or nil,
@@ -174,7 +194,7 @@ function MagazineOf(name, components)
     RemoveWeaponFromPed(ped, hash)
   end
 
-  Siku.streaming.requestWeaponAsset(hash)
+  warmWeaponAsset(hash)
   GiveWeaponToPed(ped, hash, MEASURE_AMMO, false, false)
   fitComponents(ped, hash, fitted)
 
@@ -193,6 +213,39 @@ function MagazineOf(name, components)
   magazines[key] = measured
 
   return measured
+end
+
+--- Watches a thrown weapon leave the hand.
+---
+--- A thrown weapon is given with one round: the moment the game spends it,
+--- the throw has left. The hand is left alone for a beat so the animation
+--- finishes, and a charge being planted is waited out, then the server is
+--- told which key it came from. What comes next, the next one on the pile
+--- or empty hands, is the server's answer, never decided here.
+---@param watched table The drawn record at the time the weapon came out.
+---@return nil
+local function watchThrow(watched)
+  local ped <const> = PlayerPedId()
+
+  while drawn == watched do
+    if GetAmmoInPedWeapon(ped, watched.hash) <= 0 then
+      Wait(THROW_SETTLE_MS)
+
+      while IsPedPlantingBomb(ped) do
+        Wait(0)
+      end
+
+      if drawn == watched then
+        drawn = nil
+        held = nil
+        TriggerServerEvent('siku_inventory:server:throw', { slot = watched.slot })
+      end
+
+      return
+    end
+
+    Wait(0)
+  end
 end
 
 --- Puts a weapon in the character's hands, with what it is carrying and
@@ -222,13 +275,15 @@ function SetDrawnWeapon(payload)
     drawn = nil
     held = nil
 
+    Siku.print.warn(T('weapon_unknown_to_game', tostring(payload.name)))
+
     return publishCurrentWeapon()
   end
 
   local components <const> = payload.components or {}
   local ammo <const> = payload.takesAmmo and math.max(0, payload.ammo or 0) or 1
 
-  Siku.streaming.requestWeaponAsset(hash)
+  warmWeaponAsset(hash)
   GiveWeaponToPed(ped, hash, ammo, false, true)
   fitComponents(ped, hash, components)
 
@@ -236,9 +291,20 @@ function SetDrawnWeapon(payload)
 
   magazines[key] = magazines[key] or measureMagazine(ped, hash)
 
-  SetPedAmmo(ped, hash, ammo)
-  SetAmmoInClip(ped, hash, ammo)
   SetCurrentPedWeapon(ped, hash, true)
+  SetPedCurrentWeaponVisible(ped, true, false, false, false)
+  SetPedAmmo(ped, hash, ammo)
+
+  if payload.takesAmmo then
+    SetAmmoInClip(ped, hash, ammo)
+  end
+
+  Siku.print.debug(('Drew %s: selected=%s, owned=%s, ammo=%s'):format(
+    payload.name,
+    tostring(GetSelectedPedWeapon(ped) == hash),
+    tostring(HasPedGotWeapon(ped, hash, false)),
+    tostring(GetAmmoInPedWeapon(ped, hash))
+  ))
 
   held = payload
 
@@ -252,9 +318,19 @@ function SetDrawnWeapon(payload)
     metadata = payload.metadata,
     magazine = magazines[key],
     takesAmmo = payload.takesAmmo == true,
+    throwable = payload.throwable == true,
+    count = payload.count,
   }
 
   reported = ammo
+
+  if drawn.throwable then
+    local watched <const> = drawn
+
+    CreateThread(function()
+      watchThrow(watched)
+    end)
+  end
 
   publishCurrentWeapon()
 end

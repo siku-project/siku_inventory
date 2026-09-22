@@ -554,20 +554,14 @@ end
 ---@param sessionId number The player server id.
 ---@return table? weapon The weapon in hand.
 function GetCurrentWeapon(sessionId)
-  local uid <const> = GetSessionDrawnWeapon(sessionId)
-
-  if not uid then
-    return nil
-  end
-
   local inventory <const> = GetSessionInventory(sessionId)
 
-  if not inventory then
+  if not inventory or not GetSessionDrawnRecord(sessionId) then
     return nil
   end
 
-  local slot <const> = inventory:findByUid(uid)
-  local instance <const> = describeSlot(inventory, slot)
+  local slot <const> = FindDrawnSlot(sessionId, inventory)
+  local instance <const> = slot and describeSlot(inventory, slot) or nil
 
   if not instance or not IsWeaponItem(instance.item) then
     return nil
@@ -580,6 +574,7 @@ function GetCurrentWeapon(sessionId)
   instance.name = definition and definition.name or instance.item
   instance.label = definition and definition.label or instance.item
   instance.melee = definition ~= nil and definition.category == 'melee'
+  instance.throwable = IsThrowableWeapon(instance.item)
   instance.ammoItem = takesAmmo and definition.ammoType or nil
   instance.ammo = takesAmmo and GetLoadedAmmo(stack) or nil
   instance.components = GetFittedComponents(stack)
