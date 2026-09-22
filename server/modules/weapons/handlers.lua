@@ -78,6 +78,24 @@ function OfferReloadTargets(sessionId, ammoItem)
   TriggerClientEvent('siku_inventory:client:openReload', sessionId, payload)
 end
 
+RegisterNetEvent('siku_inventory:server:throw', function(payload)
+  local sessionId <const> = source
+
+  if type(payload) ~= 'table' then
+    return
+  end
+
+  local next <const>, reason <const> = ThrowDrawnWeapon(sessionId, payload.slot)
+
+  if next == nil then
+    return refuse(sessionId, reason or 'refused')
+  end
+
+  SaveInventory(GetSessionInventory(sessionId))
+  TriggerClientEvent('siku_inventory:client:setDrawnWeapon', sessionId, next)
+  PushInventoryState(sessionId)
+end)
+
 RegisterNetEvent('siku_inventory:server:reportAmmo', function(payload)
   local sessionId <const> = source
 
