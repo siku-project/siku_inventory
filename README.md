@@ -15,6 +15,7 @@ The official inventory system of the SIKU ecosystem — a modern, modular and hi
 - **Stashes** — declared in data or registered at runtime, personal or shared, with pluggable access rules (`SetStashAccess`), a group provider hook for a future job system, and disposable temporary stashes.
 - **Ground drops** — dropped stacks merge with nearby piles, expire on a sweeper, and reach clients through per-session diffing: the ground is only pushed when it changed.
 - **Weapons** — drawn from the hotbar only, with serials, magazine-accurate reloads, attachment customization, spent-ammo tracking and a guard against unauthorized weapons.
+- **Throwables** — grenades, snowballs, flares, molotovs and the rest are piles rather than instances: no serial, one slot with a count. Drawn from the hotbar with one in hand, the client watches the throw and the server spends one of the pile, the next one coming into the hand until the pile is empty.
 - **Perishables and uses** — freshness travels as a share left (never a timestamp), spoiled stacks are swept, and use-counted items count down instead of vanishing.
 - **Give, inspect, confiscate** — proximity-checked giving with ground overflow, staff inspection gated by permission and rank, and a sealed `confiscated` holding that only the confiscation flow reads back.
 - **Server authoritative** — client requests pass a per-family field whitelist, mutations run under ordered multi-inventory locks, actions carry cooldowns and sanitized inputs.

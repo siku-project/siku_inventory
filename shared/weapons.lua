@@ -1843,8 +1843,8 @@ Weapons = {
     weight = 200,
     image = 'weapon_flare.png',
 
-    stackable = false,
-    unique = true,
+    stackable = true,
+    unique = false,
     usable = true,
     closeOnUse = true,
 
@@ -1862,8 +1862,8 @@ Weapons = {
     weight = 150,
     image = 'weapon_snowball.png',
 
-    stackable = false,
-    unique = true,
+    stackable = true,
+    unique = false,
     usable = true,
     closeOnUse = true,
 
@@ -1881,8 +1881,8 @@ Weapons = {
     weight = 600,
     image = 'weapon_bzgas.png',
 
-    stackable = false,
-    unique = true,
+    stackable = true,
+    unique = false,
     usable = true,
     closeOnUse = true,
 
@@ -1900,8 +1900,8 @@ Weapons = {
     weight = 900,
     image = 'weapon_stickybomb.png',
 
-    stackable = false,
-    unique = true,
+    stackable = true,
+    unique = false,
     usable = true,
     closeOnUse = true,
 
@@ -1919,8 +1919,8 @@ Weapons = {
     weight = 600,
     image = 'weapon_smokegrenade.png',
 
-    stackable = false,
-    unique = true,
+    stackable = true,
+    unique = false,
     usable = true,
     closeOnUse = true,
 
@@ -1938,8 +1938,8 @@ Weapons = {
     weight = 700,
     image = 'weapon_acidpackage.png',
 
-    stackable = false,
-    unique = true,
+    stackable = true,
+    unique = false,
     usable = true,
     closeOnUse = true,
 
@@ -1957,8 +1957,8 @@ Weapons = {
     weight = 800,
     image = 'weapon_pipebomb.png',
 
-    stackable = false,
-    unique = true,
+    stackable = true,
+    unique = false,
     usable = true,
     closeOnUse = true,
 
@@ -1976,8 +1976,8 @@ Weapons = {
     weight = 700,
     image = 'weapon_grenade.png',
 
-    stackable = false,
-    unique = true,
+    stackable = true,
+    unique = false,
     usable = true,
     closeOnUse = true,
 
@@ -1995,8 +1995,8 @@ Weapons = {
     weight = 800,
     image = 'weapon_molotov.png',
 
-    stackable = false,
-    unique = true,
+    stackable = true,
+    unique = false,
     usable = true,
     closeOnUse = true,
 
@@ -2014,8 +2014,8 @@ Weapons = {
     weight = 150,
     image = 'weapon_ball.png',
 
-    stackable = false,
-    unique = true,
+    stackable = true,
+    unique = false,
     usable = true,
     closeOnUse = true,
 
@@ -2033,8 +2033,8 @@ Weapons = {
     weight = 200,
     image = 'weapon_newspaper.png',
 
-    stackable = false,
-    unique = true,
+    stackable = true,
+    unique = false,
     usable = true,
     closeOnUse = true,
 
@@ -2052,8 +2052,8 @@ Weapons = {
     weight = 1000,
     image = 'weapon_proxmine.png',
 
-    stackable = false,
-    unique = true,
+    stackable = true,
+    unique = false,
     usable = true,
     closeOnUse = true,
 
