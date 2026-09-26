@@ -14,6 +14,51 @@ local function freshInstance(item)
   return expiresAt, GetItemUses(item)
 end
 
+--- What the defaults of a kind may read about the instance being born:
+--- the kind, the container it appears in and, when that container belongs
+--- to a character in play, the character itself.
+---@param inventory table The inventory the instance appears in.
+---@param item string The internal item identifier.
+---@return table context { item, owner = { type, id }, character? }.
+local function birthContext(inventory, item)
+  local character <const> = inventory:isCharacter() and Siku.cache.getCharacter(inventory.ownerId) or nil
+
+  return {
+    item = item,
+    owner = { type = inventory.ownerType, id = inventory.ownerId },
+    character = character,
+  }
+end
+
+--- The metadata a brand-new instance of a kind starts with: what the kind
+--- declares as defaults, copied or drawn for this very instance, under
+--- whatever the caller passed. A kind that declares metadata never starts
+--- without a table. An instance that already exists somewhere, moving in
+--- with its identifier, keeps its own untouched.
+---@param inventory table The inventory the instance appears in.
+---@param item string The internal item identifier.
+---@param instance table The incoming instance.
+---@return table? metadata The metadata before any serial is stamped.
+local function startingMetadata(inventory, item, instance)
+  if instance.uid or not HasItemMetadata(item) then
+    return instance.metadata
+  end
+
+  local declared = GetItemMetadataDefaults(item)
+
+  if Siku.isCallable(declared) then
+    declared = declared(birthContext(inventory, item))
+  end
+
+  local metadata <const> = type(declared) == 'table' and Siku.table.deepClone(declared) or {}
+
+  if type(instance.metadata) == 'table' then
+    Siku.table.merge(metadata, instance.metadata, false)
+  end
+
+  return metadata
+end
+
 --- Builds the metadata a stack starts life with. A kind that carries a serial
 --- is stamped here, once, and never again: an instance arriving with one
 --- already keeps it, which is what lets a weapon or a component change hands
@@ -357,7 +402,7 @@ function Inventory:fillSlot(slot, instance, count)
   self.stacks[slot] = {
     item = item,
     count = placed,
-    metadata = freshMetadata(item, instance.metadata),
+    metadata = freshMetadata(item, startingMetadata(self, item, instance)),
     uid = instance.uid or (IsItemUnique(item) and Siku.math.randomUUIDv7() or nil),
     expiresAt = instance.expiresAt or defaultExpiry,
     uses = instance.uses or defaultUses,
@@ -435,7 +480,7 @@ function Inventory:addItem(instance, count, slot)
     self.stacks[slot] = {
       item = item,
       count = portion,
-      metadata = freshMetadata(item, instance.metadata),
+      metadata = freshMetadata(item, startingMetadata(self, item, instance)),
       uid = carried or (IsItemUnique(item) and Siku.math.randomUUIDv7() or nil),
       expiresAt = instance.expiresAt or defaultExpiry,
       uses = instance.uses or defaultUses,
