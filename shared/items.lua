@@ -47,6 +47,15 @@
 ---   metadata     table, `display` lists the properties that may leave the
 ---                server, in the order they should be read. Anything not
 ---                listed here stays on the server whatever it holds.
+---                `defaults` is what a fresh instance starts with: a table
+---                copied as is, or a function receiving { item, owner =
+---                { type, id }, character } and returning the values drawn
+---                for this very instance — a card takes its holder's name,
+---                a phone its number. What a caller passes when creating
+---                the instance wins over the defaults. A kind declaring
+---                metadata always starts with a table, empty when it has
+---                no defaults; an instance moving between containers keeps
+---                what it has.
 ---   decay        number 1..10 or false. How fast the item spoils, read
 ---                against InventoryConfig.decay. Low is slow, high is fast.
 ---   removeOnDecay boolean, required when decay is set: whether a spoiled
@@ -67,6 +76,28 @@
 ---   A weapon is written out in full over there, field for field, exactly as
 ---   an item is written here. Rounds and attachments keep a shorter shape of
 ---   their own.
+local CARD_NUMBER_PATTERN <const> = '1111 1111 1111 1111'
+local CARD_VALIDITY_SECONDS <const> = 4 * 365 * 86400
+local PHONE_NUMBER_PATTERN <const> = '06 11 11 11 11'
+local ORE_PURITY_MIN <const> = 20
+local ORE_PURITY_MAX <const> = 100
+local FULL_CAN <const> = 100
+local MILLISECONDS <const> = 1000
+
+--- The name a card is issued to: its holder's, when the container belongs
+--- to a character.
+---@param context table The birth context.
+---@return string? name The full name, or nil for a card issued to nobody.
+local function holderName(context)
+  local character <const> = context.character
+
+  if type(character) ~= 'table' then
+    return nil
+  end
+
+  return ('%s %s'):format(character.firstName or '', character.lastName or '')
+end
+
 Items = {
   water = {
     name = 'water',
@@ -565,6 +596,9 @@ Items = {
       display = {
         { key = 'number', label = 'item.meta.phoneNumber' },
       },
+      defaults = function()
+        return { number = Siku.math.randomPattern(PHONE_NUMBER_PATTERN) }
+      end,
     },
   },
 
@@ -587,8 +621,15 @@ Items = {
       display = {
         { key = 'ownerName', label = 'item.meta.owner' },
         { key = 'cardNumber', label = 'item.meta.cardNumber' },
-        { key = 'expiresAt', label = 'item.meta.expiresAt' },
+        { key = 'expiresAt', label = 'item.meta.expiresAt', format = 'date' },
       },
+      defaults = function(context)
+        return {
+          ownerName = holderName(context),
+          cardNumber = Siku.math.randomPattern(CARD_NUMBER_PATTERN),
+          expiresAt = (os.time() + CARD_VALIDITY_SECONDS) * MILLISECONDS,
+        }
+      end,
     },
   },
 
@@ -612,6 +653,9 @@ Items = {
         { key = 'purity', label = 'item.meta.purity', format = 'percent' },
         { key = 'origin', label = 'item.meta.origin' },
       },
+      defaults = function()
+        return { purity = Siku.math.randomInt(ORE_PURITY_MIN, ORE_PURITY_MAX) }
+      end,
     },
   },
 
@@ -719,6 +763,7 @@ Items = {
       display = {
         { key = 'content', label = 'item.meta.content', format = 'percent' },
       },
+      defaults = { content = FULL_CAN },
     },
   },
 
@@ -741,6 +786,7 @@ Items = {
       display = {
         { key = 'content', label = 'item.meta.content', format = 'percent' },
       },
+      defaults = { content = FULL_CAN },
     },
   },
 
@@ -763,6 +809,7 @@ Items = {
       display = {
         { key = 'content', label = 'item.meta.content', format = 'percent' },
       },
+      defaults = { content = FULL_CAN },
     },
   },
 }

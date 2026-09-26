@@ -240,6 +240,31 @@ function GetItemDisplayFields(item)
   return #fields > 0 and fields or nil
 end
 
+--- Whether a kind declares metadata at all. An instance of such a kind
+--- always carries a metadata table, empty when nothing was stamped.
+---@param item string The internal item identifier.
+---@return boolean declared Whether the kind has a metadata block.
+function HasItemMetadata(item)
+  local definition <const> = GetItemDefinition(item)
+
+  return definition ~= nil and type(definition.metadata) == 'table'
+end
+
+--- What a fresh instance of a kind starts with: a table copied as is, or a
+--- function drawing the values for this very instance from its context.
+---@param item string The internal item identifier.
+---@return table|function? defaults The declaration, or nil when the kind starts empty.
+function GetItemMetadataDefaults(item)
+  local definition <const> = GetItemDefinition(item)
+  local defaults <const> = definition and definition.metadata and definition.metadata.defaults
+
+  if type(defaults) == 'table' or Siku.isCallable(defaults) then
+    return defaults
+  end
+
+  return nil
+end
+
 --- Builds the client-facing description of an item kind. Nothing outside
 --- this table is ever sent to the interface.
 ---@param item string The internal item identifier.
@@ -464,6 +489,12 @@ local function faultsOf(definition)
         faults[#faults + 1] = ('metadata.display[%d] needs a key and a label'):format(i)
       end
     end
+  end
+
+  local defaults <const> = definition.metadata and definition.metadata.defaults
+
+  if defaults ~= nil and type(defaults) ~= 'table' and not Siku.isCallable(defaults) then
+    faults[#faults + 1] = 'metadata.defaults must be a table or a function'
   end
 
   return faults
