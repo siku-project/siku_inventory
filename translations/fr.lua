@@ -50,7 +50,6 @@ return {
   stash_invalid = 'Déclaration de la planque %q invalide : %s.',
   stash_duplicate = 'La planque %q est déclarée plusieurs fois, seule la première est retenue.',
   stashes_invalid_total = '%d déclaration(s) de planque invalide(s), ces planques ne seront pas accessibles.',
-  stash_group_provider_failed = 'Le fournisseur de métiers a levé une erreur : %s.',
   stash_access_hook_failed = "La règle d'accès de la planque %q a levé une erreur : %s.",
   keybind_stash = 'Ouvrir la planque',
   inspect_unknown = 'Inconnu',

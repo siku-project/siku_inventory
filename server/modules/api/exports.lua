@@ -680,11 +680,11 @@ end
 ---@param slots number How many slots it holds.
 ---@param maxWeight number How many grams it holds.
 ---@param owner? string|boolean True for one per character, a string to bind it to a name, nil to share it.
----@param groups? table The jobs allowed to open it, each mapped to a minimum grade.
+---@param jobs? table The jobs allowed to open it, each mapped to true, a grade name or `{ grade }` / `{ permission }`.
 ---@param coords? vector3|table Where it can be opened from, one position or several.
 ---@param options? table `distance`, `instance` and `icon`.
 ---@return boolean registered, string? reason Whether the stash was accepted, and why it was not.
-function RegisterStash(id, label, slots, maxWeight, owner, groups, coords, options)
+function RegisterStash(id, label, slots, maxWeight, owner, jobs, coords, options)
   local extra <const> = type(options) == 'table' and options or {}
 
   local definition <const>, reason <const> = RegisterStashDefinition({
@@ -693,7 +693,7 @@ function RegisterStash(id, label, slots, maxWeight, owner, groups, coords, optio
     slots = slots,
     maxWeight = maxWeight,
     owner = owner,
-    groups = groups,
+    jobs = jobs,
     coords = coords,
     distance = extra.distance,
     instance = extra.instance,

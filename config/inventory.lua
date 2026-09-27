@@ -154,7 +154,7 @@ InventoryConfig = {
   ---
   --- Only ever does anything while a stash declaring coords is within reach,
   --- and a prompt says so before the key means anything. A server using a
-  --- target resource instead can point it at the OpenStash export and ignore
+  --- target resource instead can point it at the OpenContainer export, kind 'stash', and ignore
   --- this entirely.
   ---
   --- Default: 'e'

@@ -61,7 +61,7 @@ function CreateTemporaryStash(properties)
     slots = properties.slots,
     maxWeight = properties.maxWeight,
     owner = properties.owner,
-    groups = properties.groups,
+    jobs = properties.jobs,
     coords = properties.coords,
     distance = properties.distance,
     instance = properties.instance,
@@ -127,7 +127,8 @@ exports('RemoveTemporaryStash', RemoveTemporaryStash)
 ---@return number removed The number of rows deleted.
 function DiscardOrphanTemporaryStashes()
   local removed <const> = MySQL.update.await(
-    "DELETE FROM inventories WHERE owner_type = 'stash' AND expires_at IS NOT NULL"
+    "DELETE FROM inventories WHERE owner_type = 'stash' AND (expires_at IS NOT NULL OR owner_key LIKE ?)",
+    { BuildTemporaryStashPattern() }
   ) or 0
 
   if removed > 0 then
