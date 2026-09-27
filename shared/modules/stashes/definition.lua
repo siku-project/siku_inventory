@@ -46,31 +46,71 @@ local function readPositions(value)
   return positions, nil
 end
 
---- Reads the jobs a stash is reserved for, each with the grade it asks for.
----@param value any The declared groups.
----@return table? groups, string? reason The groups, and why the value was refused otherwise.
-local function readGroups(value)
+--- Reads what one job rule asks for: any member, a grade by name, or a
+--- permission of the job.
+---@param name string The job name.
+---@param value any The declared rule.
+---@return table? rule { grade?, permission? }, nil when malformed.
+---@return string? reason Why the rule was refused.
+local function readJobRule(name, value)
+  if value == true then
+    return {}, nil
+  end
+
+  if type(value) == 'string' and value ~= '' then
+    return { grade = value }, nil
+  end
+
+  if type(value) ~= 'table' then
+    return nil, ('job %q must be true, a grade name or a rule table'):format(name)
+  end
+
+  local grade <const> = value.grade
+  local permission <const> = value.permission
+
+  if grade ~= nil and (type(grade) ~= 'string' or grade == '') then
+    return nil, ('job %q names an invalid grade'):format(name)
+  end
+
+  if permission ~= nil and (type(permission) ~= 'string' or permission == '') then
+    return nil, ('job %q names an invalid permission'):format(name)
+  end
+
+  if grade and permission then
+    return nil, ('job %q asks for a grade and a permission at once'):format(name)
+  end
+
+  return { grade = grade, permission = permission }, nil
+end
+
+--- Reads the jobs a stash is reserved for, each with what it asks of the
+--- character in that job.
+---@param value any The declared jobs.
+---@return table? jobs, string? reason The rules by job name, and why the value was refused otherwise.
+local function readJobs(value)
   if value == nil then
     return nil, nil
   end
 
   if type(value) ~= 'table' then
-    return nil, 'groups must be a table of job names'
+    return nil, 'jobs must be a table of job names'
   end
 
-  local groups <const> = {}
+  local jobs <const> = {}
   local found = false
 
-  for name, grade in pairs(value) do
+  for name, declared in pairs(value) do
     if type(name) ~= 'string' or name == '' then
-      return nil, 'a group name must be a non-empty string'
+      return nil, 'a job name must be a non-empty string'
     end
 
-    if type(grade) ~= 'number' or grade % 1 ~= 0 or grade < 0 then
-      return nil, ('group %q must name a whole grade, zero or more'):format(name)
+    local rule <const>, reason <const> = readJobRule(name, declared)
+
+    if not rule then
+      return nil, reason
     end
 
-    groups[name] = grade
+    jobs[name] = rule
     found = true
   end
 
@@ -78,7 +118,7 @@ local function readGroups(value)
     return nil, nil
   end
 
-  return groups, nil
+  return jobs, nil
 end
 
 --- Reads who a stash belongs to. The three answers are shared, one per
@@ -140,10 +180,10 @@ function NormaliseStash(declaration)
     return nil, ownerReason
   end
 
-  local groups <const>, groupsReason <const> = readGroups(declaration.groups)
+  local jobs <const>, jobsReason <const> = readJobs(declaration.jobs)
 
-  if groupsReason then
-    return nil, groupsReason
+  if jobsReason then
+    return nil, jobsReason
   end
 
   local positions <const>, positionsReason <const> = readPositions(declaration.coords)
@@ -176,7 +216,7 @@ function NormaliseStash(declaration)
     slots = slots,
     maxWeight = maxWeight,
     owner = owner,
-    groups = groups,
+    jobs = jobs,
     coords = positions,
     distance = distance,
     instance = instance,

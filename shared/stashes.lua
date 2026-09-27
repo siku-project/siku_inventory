@@ -31,13 +31,19 @@
 ---                 a property.
 ---
 ---   This is not access control. Whether a character may open a stash at all
----   is answered by `groups`, by `coords` and by the openStash hook — never by
+---   is answered by `jobs`, by `coords` and by the openStash hook — never by
 ---   who it belongs to.
 ---
 --- Optional
----   groups     table, the jobs allowed to open it, each mapped to the
----              minimum grade required: { police = 0, ambulance = 2 }. Absent
----              means anybody may open it.
+---   jobs       table, the jobs allowed to open it, each mapped to what the
+---              character must hold in that job, answered by the core job
+---              engine. One matching job is enough. Absent means anybody
+---              may open it.
+---                true                          any member
+---                'sergeant'                    that grade or a higher rank
+---                { grade = 'sergeant' }        the same, spelled out
+---                { permission = 'evidence' }   a permission of the job, with
+---                                              its duty rule when it has one
 ---   coords     vector3 or a list of them. The stash can only be opened, and
 ---              stays open, while the character is standing near one of them.
 ---              Absent means it may be opened from anywhere, which is what a
@@ -59,7 +65,7 @@ Stashes = {
     maxWeight = 70000,
 
     owner = true,
-    groups = { police = 0 },
+    jobs = { police = true },
 
     coords = vec3(452.3, -991.4, 30.7),
     icon = 'mdi-locker',
@@ -72,7 +78,7 @@ Stashes = {
     slots = 100,
     maxWeight = 200000,
 
-    groups = { police = 2 },
+    jobs = { police = 'sergeant' },
 
     coords = vec3(474.1, -1000.2, 30.68),
     icon = 'mdi-archive-outline',
@@ -86,7 +92,7 @@ Stashes = {
     maxWeight = 70000,
 
     owner = true,
-    groups = { ambulance = 0 },
+    jobs = { ems = true },
 
     coords = vec3(301.3, -600.23, 43.28),
     icon = 'mdi-locker',

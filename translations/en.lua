@@ -50,7 +50,6 @@ return {
   stash_invalid = 'Stash %q declaration is invalid: %s.',
   stash_duplicate = 'Stash %q is declared more than once, only the first is kept.',
   stashes_invalid_total = '%d invalid stash declaration(s), those stashes will not be reachable.',
-  stash_group_provider_failed = 'The group provider raised an error: %s.',
   stash_access_hook_failed = 'The access rule of stash %q raised an error: %s.',
   keybind_stash = 'Open the stash',
   inspect_unknown = 'Unknown',
