@@ -63,6 +63,13 @@ function BuildTemporaryStashName()
   return ('%s:%s'):format(TEMPORARY_PREFIX, Siku.math.randomUUIDv7())
 end
 
+--- The SQL pattern matching every inventory a temporary stash is stored
+--- under, whether or not it was given an expiry.
+---@return string pattern The LIKE pattern.
+function BuildTemporaryStashPattern()
+  return ('%s:%%'):format(TEMPORARY_PREFIX)
+end
+
 --- Whether a stash is one of the temporary ones.
 ---
 --- Being temporary is about who declared it, not about when it goes: one asked

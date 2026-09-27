@@ -2,7 +2,7 @@
 
 The official inventory system of the SIKU ecosystem — a modern, modular and high-performance resource for managing items, weight, hotbars, ground drops, metadata, unique item instances, and seamless player interactions.
 
-![Version](https://img.shields.io/badge/version-1.1.0-4785bd)
+![Version](https://img.shields.io/badge/version-1.2.0-4785bd)
 ![FiveM](https://img.shields.io/badge/fx__version-cerulean-4785bd)
 ![Lua](https://img.shields.io/badge/Lua-5.4-4785bd)
 ![Vue](https://img.shields.io/badge/NUI-Vue%203-4785bd)
@@ -12,7 +12,7 @@ The official inventory system of the SIKU ecosystem — a modern, modular and hi
 - **A real item model** — the definition describes what an item *is* (label, weight, stacking, uniqueness, usability); what a player carries is an instance with its own quantity, metadata, freshness and remaining uses. Unique instances get an identifier and a serial that follow them everywhere. A kind declaring metadata says what a fresh instance starts with (`metadata.defaults`, a table or a function of the birth context): a bank card is issued to its holder with a number and an expiry, a phone gets its number, a can starts full, whoever creates the instance.
 - **Weight and named slots** — grid slots plus a five-key hotbar (`H1`–`H5`); everything the server accepts is recomputed from slot names, never from what a client claims.
 - **Containers as a framework** — stash, trunk, glovebox, bag-in-bag, inspect and staff views are all kinds of one registered container family, with per-kind resolvers, live revalidation of open views, and room for future kinds (a shop reserve, for instance).
-- **Stashes** — declared in data or registered at runtime, personal or shared, with pluggable access rules (`SetStashAccess`), a group provider hook for a future job system, and disposable temporary stashes.
+- **Stashes** — declared in data or registered at runtime, personal or shared, reserved to jobs through the core job engine (any member, a grade, or a permission of the job), with pluggable access rules (`SetStashAccess`) and disposable temporary stashes.
 - **Ground drops** — dropped stacks merge with nearby piles, expire on a sweeper, and reach clients through per-session diffing: the ground is only pushed when it changed.
 - **Weapons** — drawn from the hotbar only, with serials, magazine-accurate reloads, attachment customization, spent-ammo tracking and a guard against unauthorized weapons.
 - **Throwables** — grenades, snowballs, flares, molotovs and the rest are piles rather than instances: no serial, one slot with a count. Drawn from the hotbar with one in hand, the client watches the throw and the server spends one of the pile, the next one coming into the hand until the pile is empty.
@@ -130,7 +130,7 @@ end)
 |---|---|
 | `RegisterStash`, `UnregisterStash` | Declare a stash at runtime. |
 | `CreateTemporaryStash`, `RemoveTemporaryStash` | Short-lived stashes that expire on their own. |
-| `SetStashAccess` | Per-stash access rule; `SetGroupProvider` plugs a job/group system in wholesale. |
+| `SetStashAccess` | Per-stash access rule, asked after the job, distance and instance checks. |
 | `RegisterContainer`, `UnregisterContainer` | A new container kind, with its own resolve and validate. |
 | `OpenContainer`, `CloseContainer` | Drive a container view from another resource. |
 | `ConfiscateInventory`, `ReturnInventory` | Move a character's belongings to the sealed holding and back. |

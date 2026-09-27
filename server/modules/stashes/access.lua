@@ -1,95 +1,50 @@
-local provider = nil
 local hooks <const> = {}
 
---- Reads the jobs a character holds, and the grade they hold each at.
----
---- The ecosystem has no job system yet, so this reads the shapes a character
---- row is likely to carry once it does — a `groups` table, or a job and a
---- grade — and answers nothing when it finds neither. A resource that owns
---- jobs replaces the whole thing through SetGroupProvider, which is the one
---- line it takes to make every stash in the server obey it.
----@param sessionId number The player server id.
----@return table groups The jobs held, each mapped to a grade.
-local function readGroups(sessionId)
-  local character <const> = GetSessionCharacter(sessionId)
-
-  if not character then
-    return {}
+--- Whether a character satisfies one job rule, asked to the core job
+--- engine: a permission with its duty rule, a grade by rank, or the mere
+--- membership.
+---@param characterId number The character id.
+---@param jobName string The job name.
+---@param rule table { grade?, permission? }.
+---@return boolean holds Whether the character qualifies through this job.
+local function holdsJob(characterId, jobName, rule)
+  if rule.permission then
+    return Siku.jobs.hasPermission(characterId, jobName, rule.permission)
   end
 
-  if type(character.groups) == 'table' then
-    return character.groups
-  end
+  local membership <const> = Siku.jobs.getMembership(characterId, jobName)
 
-  if type(character.job) ~= 'string' or character.job == '' then
-    return {}
-  end
-
-  local grade <const> = character.job_grade or character.grade
-
-  return { [character.job] = type(grade) == 'number' and grade or 0 }
-end
-
---- Replaces how the jobs of a character are read.
----@param handler? function Called with a session id, answering a table of jobs and grades.
----@return boolean accepted Whether the handler was taken.
-function SetGroupProvider(handler)
-  if handler == nil then
-    provider = nil
-
-    return true
-  end
-
-  if not Siku.isCallable(handler) then
+  if not membership then
     return false
   end
 
-  provider = handler
-
-  return true
-end
-
-exports('SetGroupProvider', SetGroupProvider)
-
---- The jobs a character holds, whichever way the server reads them.
----@param sessionId number The player server id.
----@return table groups The jobs held, each mapped to a grade.
-function GetSessionGroups(sessionId)
-  if not provider then
-    return readGroups(sessionId)
-  end
-
-  local ok <const>, held <const> = pcall(provider, sessionId)
-
-  if not ok then
-    Siku.print.error(T('stash_group_provider_failed', tostring(held)))
-
-    return {}
-  end
-
-  return type(held) == 'table' and held or {}
-end
-
---- Whether a character holds one of the jobs a stash asks for, at the grade
---- it asks for. A stash asking for nothing is open to everybody.
----@param sessionId number The player server id.
----@param groups? table The jobs the stash asks for.
----@return boolean allowed Whether the character qualifies.
-function PassesGroupRequirement(sessionId, groups)
-  if not groups then
+  if not rule.grade then
     return true
   end
 
-  local held <const> = GetSessionGroups(sessionId)
+  local required <const> = Siku.jobs.getGrade(jobName, rule.grade)
 
-  for name, minimum in pairs(groups) do
-    local grade <const> = held[name]
+  return required ~= nil and membership.rank >= required.rank
+end
 
-    if type(grade) == 'number' and grade >= minimum then
-      return true
-    end
+--- Whether a character holds one of the jobs a stash asks for, the way it
+--- asks for it. A stash asking for nothing is open to everybody.
+---@param sessionId number The player server id.
+---@param jobs? table The rules by job name.
+---@return boolean allowed Whether the character qualifies.
+function PassesJobRequirement(sessionId, jobs)
+  if not jobs then
+    return true
+  end
 
-    if grade == true and minimum == 0 then
+  local characterId <const> = Siku.cache.getCurrentCharacterId(sessionId)
+
+  if not characterId then
+    return false
+  end
+
+  for jobName, rule in pairs(jobs) do
+    if holdsJob(characterId, jobName, rule) then
       return true
     end
   end
@@ -116,10 +71,14 @@ end
 --- Jobs, distance and instance answer most of it; a padlock, a warrant or a
 --- rented locker do not. The handler is asked last, after everything declared
 --- has already passed, and refusing is as simple as answering false.
----@param name string The stash identifier.
+---@param name string|number The stash identifier.
 ---@param handler? function Called with the session and what is being opened.
 ---@return boolean accepted Whether the handler was taken.
 function SetStashAccess(name, handler)
+  if type(name) == 'number' then
+    name = tostring(name)
+  end
+
   if type(name) ~= 'string' or name == '' then
     return false
   end
@@ -185,7 +144,7 @@ function CanSessionOpenStash(sessionId, definition, owner)
     return false, 'unreachable'
   end
 
-  if not PassesGroupRequirement(sessionId, definition.groups) then
+  if not PassesJobRequirement(sessionId, definition.jobs) then
     return false, 'not_allowed'
   end
 
